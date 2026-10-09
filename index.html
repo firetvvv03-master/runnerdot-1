@@ -1,0 +1,2263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cute Track Runner - Ultimate Arcade Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <style>
+        * {
+            font-family: 'Quicksand', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        .font-game {
+            font-family: 'Fredoka One', cursive;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 182, 193, 0.8);
+            border-radius: 10px;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+        .animate-float {
+            animation: floatSlow 3s ease-in-out infinite;
+        }
+
+        @keyframes rainbowGlowPath {
+            0% { 
+                filter: drop-shadow(0 0 16px rgba(255, 0, 127, 1)) 
+                        drop-shadow(0 0 35px rgba(0, 223, 216, 0.9)) 
+                        drop-shadow(0 0 55px rgba(255, 215, 0, 0.9));
+                hue-rotate(0deg);
+            }
+            50% { 
+                filter: drop-shadow(0 0 24px rgba(0, 255, 255, 1)) 
+                        drop-shadow(0 0 45px rgba(255, 0, 255, 1)) 
+                        drop-shadow(0 0 75px rgba(121, 40, 202, 1));
+                hue-rotate(180deg);
+            }
+            100% { 
+                filter: drop-shadow(0 0 16px rgba(255, 0, 127, 1)) 
+                        drop-shadow(0 0 35px rgba(0, 223, 216, 0.9)) 
+                        drop-shadow(0 0 55px rgba(255, 215, 0, 0.9));
+                hue-rotate(360deg);
+            }
+        }
+        .neon-track-3d {
+            animation: rainbowGlowPath 3s infinite linear;
+        }
+
+        @keyframes feverRainbow {
+            0% { filter: hue-rotate(0deg) drop-shadow(0 0 25px rgba(255, 0, 255, 1)); }
+            50% { filter: hue-rotate(180deg) drop-shadow(0 0 35px rgba(0, 255, 255, 1)); }
+            100% { filter: hue-rotate(360deg) drop-shadow(0 0 25px rgba(255, 0, 255, 1)); }
+        }
+        .fever-mode-active {
+            animation: feverRainbow 1.2s infinite linear;
+        }
+
+        @keyframes bossPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.9)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 40px rgba(255, 100, 0, 1)); }
+        }
+        .boss-active {
+            animation: bossPulse 1.2s infinite ease-in-out;
+        }
+
+        @keyframes floatUpFade {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-40px) scale(1.3); opacity: 0; }
+        }
+        .floating-score {
+            animation: floatUpFade 0.7s ease-out forwards;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 2px solid rgba(255, 255, 255, 0.95);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .tap-active:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body id="bodyTheme" class="bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 min-h-screen h-screen overflow-hidden flex flex-col justify-between select-none text-white transition-colors duration-500">
+
+    <header class="p-2.5 md:p-3 w-full max-w-4xl mx-auto flex items-center justify-between z-20">
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="glass-panel px-3 py-1 rounded-full shadow-lg flex items-center gap-2 text-purple-900">
+                <i class="fa-solid fa-star text-yellow-400 text-lg animate-bounce"></i>
+                <span id="scoreDisplay" class="font-game text-lg md:text-xl">0</span>
+            </div>
+            <div class="glass-panel px-3 py-1 rounded-full shadow-lg flex items-center gap-2 text-purple-900">
+                <i class="fa-solid fa-gem text-cyan-400 text-base"></i>
+                <span id="gemDisplay" class="font-game text-base md:text-lg">0</span>
+            </div>
+            <div class="glass-panel px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1.5 text-purple-900">
+                <i class="fa-solid fa-layer-group text-indigo-500 text-base"></i>
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider hidden sm:inline">Level</span>
+                <span id="levelDisplay" class="font-game text-base md:text-lg text-indigo-600">1</span>
+            </div>
+            <div class="glass-panel px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1.5 text-purple-900">
+                <i class="fa-solid fa-bolt text-amber-400 text-base"></i>
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider hidden sm:inline">Combo</span>
+                <span id="comboDisplay" class="font-game text-base md:text-lg text-pink-600">x0</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <span id="modeBadge" class="hidden sm:inline-block glass-panel px-2.5 py-0.5 rounded-full text-[11px] font-bold text-indigo-700 uppercase tracking-wide">
+                Single Mode
+            </span>
+
+            <button id="btnSound" class="glass-panel w-9 h-9 rounded-full flex items-center justify-center text-purple-700 hover:text-purple-900 transition tap-active shadow-md">
+                <i class="fa-solid fa-volume-high text-base"></i>
+            </button>
+
+            <button id="btnOpenMenu" class="glass-panel w-9 h-9 rounded-full flex items-center justify-center text-purple-700 hover:text-purple-900 transition tap-active shadow-md">
+                <i class="fa-solid fa-bars text-base"></i>
+            </button>
+        </div>
+    </header>
+
+    <div id="bossHpContainer" class="hidden w-full max-w-sm mx-auto px-4 z-20 transition-all duration-300">
+        <div class="glass-panel px-2.5 py-1 rounded-xl shadow-lg flex flex-col gap-0.5 text-purple-900">
+            <div class="flex justify-between items-center px-0.5">
+                <span id="bossNameLabel" class="font-game text-xs text-red-600 flex items-center gap-1">
+                    <i class="fa-solid fa-skull"></i> BOSS: NEON SHADOW DRAGON
+                </span>
+                <span id="bossHpText" class="font-game text-[10px]">HP: 10/10</span>
+            </div>
+            <div class="w-full bg-gray-200/60 h-2.5 rounded-full overflow-hidden p-0.5 shadow-inner">
+                <div id="bossHpBar" class="bg-gradient-to-r from-red-500 via-pink-500 to-yellow-400 h-full rounded-full transition-all duration-300" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <main id="gameContainer" class="relative flex-1 w-full max-w-4xl mx-auto flex flex-col items-center justify-center p-1 overflow-hidden">
+        
+        <div id="playArea" class="relative w-full h-full max-h-[520px] flex items-center justify-center cursor-pointer">
+            
+            <div class="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-white/70 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-lg border border-white text-purple-900 pointer-events-none">
+                <div class="flex items-center gap-1">
+                    <span id="shieldBadge" class="hidden text-cyan-600 mr-1 text-xs"><i class="fa-solid fa-shield-halved"></i></span>
+                    <span id="ghostBadge" class="hidden text-purple-600 mr-1 text-xs"><i class="fa-solid fa-ghost"></i></span>
+                    <div id="heartContainer" class="flex items-center gap-1 text-red-500 text-sm"></div>
+                </div>
+
+                <div class="h-4 w-[1px] bg-purple-300"></div>
+
+                <div id="patternTimerContainer" class="flex items-center gap-2">
+                    <span class="font-game text-[10px] text-indigo-600 flex items-center gap-0.5">
+                        <i class="fa-solid fa-stopwatch"></i>
+                    </span>
+                    <div class="w-20 bg-gray-200/80 h-1.5 rounded-full overflow-hidden p-0.5 shadow-inner">
+                        <div id="timerBar" class="bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400 h-full rounded-full transition-all duration-100" style="width: 100%;"></div>
+                    </div>
+                    <span id="timerText" class="font-game text-[10px] w-7 text-right">10.0s</span>
+                </div>
+            </div>
+
+            <svg id="svgTrackContainer" class="w-full h-full max-w-[460px] max-h-[460px] overflow-visible neon-track-3d" viewBox="0 0 520 520">
+                <defs>
+                    <linearGradient id="neonGradient3D" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#FF007F" />
+                        <stop offset="30%" stop-color="#7928CA" />
+                        <stop offset="60%" stop-color="#00DFD8" />
+                        <stop offset="100%" stop-color="#FFD700" />
+                    </linearGradient>
+
+                    <linearGradient id="fill3DGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#FFF366" />
+                        <stop offset="50%" stop-color="#00DFD8" />
+                        <stop offset="100%" stop-color="#FF007F" />
+                    </linearGradient>
+
+                    <filter id="superGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="10" result="blur1" />
+                        <feGaussianBlur stdDeviation="20" result="blur2" />
+                        <feMerge>
+                            <feMergeNode in="blur2" />
+                            <feMergeNode in="blur1" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <circle cx="260" cy="260" r="235" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="3" />
+
+                <g id="bossAvatarGroup" class="hidden boss-active" transform="translate(260, 260)">
+                    <circle cx="0" cy="0" r="45" fill="rgba(20, 10, 30, 0.85)" stroke="#FF0055" stroke-width="4" filter="url(#superGlow)" />
+                    <text id="bossAvatarEmoji" x="0" y="8" text-anchor="middle" font-size="32">👾</text>
+                </g>
+
+                <g id="trackExtrusions" fill="rgba(0, 0, 0, 0.45)" stroke="rgba(255, 255, 255, 0.2)" stroke-width="2"></g>
+                
+                <path id="trackShadow" d="" fill="none" stroke="#FF007F" stroke-width="58" stroke-linecap="round" stroke-linejoin="round" opacity="0.45" filter="url(#superGlow)" />
+                <path id="trackBackgroundFill" d="" fill="none" stroke="url(#fill3DGrad)" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" opacity="0.95" />
+                <path id="trackPath" d="" fill="none" stroke="url(#neonGradient3D)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" />
+                <path id="trackInnerLine" d="" fill="none" stroke="#FFF9D6" stroke-width="6" stroke-linecap="round" stroke-dasharray="16,18" opacity="0.95" />
+
+                <g id="powerUpsGroup"></g>
+                <g id="targetsGroup"></g>
+                <g id="characterGroup" class="transition-transform duration-75"></g>
+            </svg>
+
+            <div id="judgmentOverlay" class="absolute inset-0 pointer-events-none flex items-center justify-center"></div>
+
+            <div id="pipMiniView" class="hidden absolute bottom-2 right-2 w-28 h-28 glass-panel rounded-2xl overflow-hidden shadow-2xl border-2 border-pink-400 z-30 pointer-events-none flex flex-col items-center justify-center p-1">
+                <span id="pipLabel" class="font-game text-[9px] text-purple-900 uppercase">COM View</span>
+                <div class="relative w-full h-full flex items-center justify-center scale-[0.2]">
+                    <svg id="svgPipTrack" class="w-[520px] h-[520px] overflow-visible" viewBox="0 0 520 520">
+                        <path id="trackPathPip" d="" fill="none" stroke="#FF007F" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" />
+                        <g id="targetsGroupPip"></g>
+                        <g id="characterGroupPip"></g>
+                    </svg>
+                </div>
+            </div>
+
+            <div id="startPrompt" class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md rounded-3xl z-10 transition-opacity">
+                <div class="glass-panel p-5 rounded-3xl text-center shadow-2xl max-w-xs animate-float text-purple-900">
+                    <div id="promptCharacterIcon" class="w-16 h-16 mx-auto mb-1"></div>
+                    <h2 class="font-game text-xl mb-1">3D Track Arcade</h2>
+                    <p class="text-xs text-gray-600 mb-3 font-semibold">Hit targets & collect power-ups!</p>
+                    <button id="btnStartGame" class="w-full py-2.5 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 text-white font-game text-base rounded-2xl shadow-lg hover:brightness-110 active:scale-95 transition">
+                        TAP TO START!
+                    </button>
+                </div>
+            </div>
+
+            <!-- Second Chance Revive Modal -->
+            <div id="reviveModal" class="absolute inset-0 bg-black/80 backdrop-blur-md rounded-3xl z-50 flex items-center justify-center p-4 hidden">
+                <div class="glass-panel w-full max-w-xs rounded-3xl p-6 shadow-2xl text-purple-900 flex flex-col items-center text-center animate-float">
+                    <div class="w-14 h-14 rounded-full bg-red-500 text-white flex items-center justify-center text-2xl shadow-md mb-2 animate-bounce">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+                    <h3 class="font-game text-xl text-red-600 mb-1">SECOND CHANCE!</h3>
+                    <p class="text-xs text-gray-600 mb-4 font-semibold">Don't give up yet! Revive to keep your high score run going.</p>
+                    
+                    <div class="w-full space-y-2 mb-4">
+                        <button id="btnReviveCoin" class="w-full py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white font-game text-xs rounded-xl shadow-md hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-coins"></i> Buy +3 HP (Cost: 30 💎)
+                        </button>
+                        <button id="btnReviveAd" class="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-game text-xs rounded-xl shadow-md hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-tv"></i> Watch Ad for Full Heal <span id="adReviveBadge" class="text-[9px] bg-white/20 px-1.5 py-0.5 rounded">1/1</span>
+                        </button>
+                    </div>
+
+                    <button id="btnDeclineRevive" class="w-full py-2 bg-gray-200 text-gray-600 font-game text-xs rounded-xl hover:bg-gray-300 transition">
+                        NO THANKS, END RUN
+                    </button>
+                </div>
+            </div>
+
+            <div id="summaryModal" class="absolute inset-0 bg-black/70 backdrop-blur-md rounded-3xl z-40 flex items-center justify-center p-4 hidden">
+                <div class="glass-panel w-full max-w-xs rounded-3xl p-5 shadow-2xl text-purple-900 flex flex-col items-center animate-float">
+                    <h3 class="font-game text-xl text-pink-600 mb-1">RUN SUMMARY</h3>
+                    <p id="summarySubtitle" class="text-xs text-gray-600 font-bold mb-3">Great performance!</p>
+                    <div class="w-full space-y-2 text-xs bg-white/60 p-3 rounded-2xl mb-4">
+                        <div class="flex justify-between"><span>Final Score:</span><strong id="sumScore" class="font-game text-sm text-purple-900">0</strong></div>
+                        <div class="flex justify-between"><span>Gems Earned:</span><strong id="sumGems" class="font-game text-sm text-cyan-600">+0 💎</strong></div>
+                        <div class="flex justify-between"><span>Max Combo:</span><strong id="sumCombo" class="font-game text-sm text-pink-600">x0</strong></div>
+                        <div class="flex justify-between"><span>Accuracy:</span><strong id="sumAccuracy" class="font-game text-sm text-emerald-600">0%</strong></div>
+                    </div>
+                    <button id="btnDismissSummary" class="w-full py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-game text-sm rounded-xl shadow-md hover:brightness-110 active:scale-95 transition">
+                        PLAY AGAIN
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ad Simulation Modal -->
+            <div id="adModal" class="absolute inset-0 bg-black/80 backdrop-blur-md rounded-3xl z-50 flex items-center justify-center p-4 hidden">
+                <div class="glass-panel w-full max-w-xs rounded-3xl p-6 shadow-2xl text-purple-900 flex flex-col items-center text-center animate-float">
+                    <div class="w-12 h-12 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xl shadow-md mb-2">
+                        <i class="fa-solid fa-tv animate-pulse"></i>
+                    </div>
+                    <h3 class="font-game text-lg text-indigo-700 mb-1">SPONSORED REWARD AD</h3>
+                    <p id="adDescription" class="text-xs text-gray-600 mb-4">Watch this quick simulated ad to claim your free reward!</p>
+                    <div class="w-full bg-purple-900/10 h-16 rounded-xl flex items-center justify-center font-game text-xl text-pink-600 mb-4 border border-purple-200">
+                        Ad Playing... <span id="adCountdown" class="ml-2">3s</span>
+                    </div>
+                    <button id="btnCloseAd" disabled class="w-full py-2 bg-gray-300 text-gray-500 font-game text-xs rounded-xl cursor-not-allowed transition">
+                        PLEASE WAIT...
+                    </button>
+                </div>
+            </div>
+
+            <!-- Daily Login Reward Modal -->
+            <div id="dailyRewardModal" class="absolute inset-0 bg-black/70 backdrop-blur-md rounded-3xl z-50 flex items-center justify-center p-4 hidden">
+                <div class="glass-panel w-full max-w-xs rounded-3xl p-6 shadow-2xl text-purple-900 flex flex-col items-center animate-float">
+                    <div class="w-14 h-14 rounded-full bg-yellow-400 text-white flex items-center justify-center text-2xl shadow-md mb-2">
+                        <i class="fa-solid fa-gift animate-bounce"></i>
+                    </div>
+                    <h3 class="font-game text-xl text-pink-600 mb-1">DAILY LOGIN BONUS</h3>
+                    <p class="text-xs text-gray-600 text-center mb-4">Come back every day for free gems & rewards!</p>
+                    <div id="dailyRewardBox" class="w-full bg-white/60 p-3 rounded-2xl text-center mb-4">
+                        <div class="font-game text-sm text-purple-900 mb-1">Day 1 Reward</div>
+                        <div class="font-game text-2xl text-cyan-500">+25 💎</div>
+                    </div>
+                    <button id="btnClaimDaily" class="w-full py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-game text-sm rounded-xl shadow-md hover:brightness-110 active:scale-95 transition">
+                        CLAIM REWARD!
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="p-3 w-full max-w-xl mx-auto flex flex-col items-center gap-2 z-20">
+        <!-- Moved target hit count and combo display on top of P1/tap button -->
+        <div class="w-full flex items-center justify-center gap-4 glass-panel px-3 py-1.5 rounded-xl shadow-sm text-purple-900">
+            <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-bullseye text-pink-500 text-xs"></i>
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Target:</span>
+                <span id="targetCountDisplay" class="font-game text-xs md:text-sm text-pink-600">0/5</span>
+            </div>
+            <div class="h-3 w-[1px] bg-purple-300"></div>
+            <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-amber-400 text-sm"></i>
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Combo:</span>
+                <span id="comboDisplayFooter" class="font-game text-xs md:text-sm text-amber-600">x0</span>
+            </div>
+        </div>
+
+        <div id="duelActionControls" class="w-full flex gap-3">
+            <button id="btnTapAction" class="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-game text-lg rounded-2xl shadow-xl border-4 border-white/80 active:scale-95 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-hand-pointer text-sm"></i> P1 TAP / SPACE
+            </button>
+            <button id="btnSpecialSkill" class="px-4 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 text-white font-game text-sm rounded-2xl shadow-xl border-4 border-white/80 active:scale-95 transition-all flex items-center justify-center gap-1.5" title="Special Blast Skill (Q Key)">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> SKILL (<span id="skillCooldownText">Ready</span>)
+            </button>
+            <button id="btnP2Action" class="hidden flex-1 py-3 bg-gradient-to-r from-cyan-400 to-blue-600 text-white font-game text-lg rounded-2xl shadow-xl border-4 border-white/80 active:scale-95 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-bolt text-sm"></i> P2 ENTER
+            </button>
+        </div>
+
+        <div class="w-full flex items-center justify-between gap-2 py-1 px-3 glass-panel rounded-xl shadow-inner text-purple-900">
+            <span id="currentTrackLabel" class="text-xs font-bold pl-1 truncate">Track: Circle</span>
+            <button id="btnRandomTrack" class="px-2.5 py-0.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg text-xs font-bold hover:brightness-110 transition shadow-sm">
+                <i class="fa-solid fa-shuffle mr-1"></i> Random Track
+            </button>
+        </div>
+    </footer>
+
+    <div id="menuModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 shadow-2xl relative flex flex-col max-h-[90vh] text-purple-900">
+            <div class="flex justify-between items-center pb-3 border-b border-purple-200">
+                <h3 class="font-game text-2xl flex items-center gap-2">
+                    <i class="fa-solid fa-gamepad text-pink-500"></i> Game Menu
+                </h3>
+                <button id="btnCloseMenu" class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center hover:bg-pink-200 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-8 gap-1 my-3 bg-purple-200/50 p-1 rounded-xl text-[10px]">
+                <button id="tabTracks" class="py-2 font-bold rounded-lg transition bg-white text-purple-800 shadow-sm">Tracks</button>
+                <button id="tabSkins" class="py-2 font-bold rounded-lg transition text-gray-600">Skins</button>
+                <button id="tabShop" class="py-2 font-bold rounded-lg transition text-gray-600">Shop</button>
+                <button id="tabThemes" class="py-2 font-bold rounded-lg transition text-gray-600">Themes</button>
+                <button id="tabScores" class="py-2 font-bold rounded-lg transition text-gray-600">Scores</button>
+                <button id="tabTrophies" class="py-2 font-bold rounded-lg transition text-gray-600">Trophies</button>
+                <button id="tabMissions" class="py-2 font-bold rounded-lg transition text-gray-600">Missions</button>
+                <button id="tabModes" class="py-2 font-bold rounded-lg transition text-gray-600">Modes</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-1">
+                <div id="contentTracks" class="space-y-4">
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">3D Illusion Glass Shapes</h4>
+                    <div id="shapeGrid" class="grid grid-cols-4 gap-2"></div>
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider pt-2">Holiday Patterns</h4>
+                    <div id="holidayGrid" class="grid grid-cols-2 gap-2"></div>
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider pt-2">Transportation Patterns</h4>
+                    <div id="transportGrid" class="grid grid-cols-2 gap-2"></div>
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider pt-2">Alphabet A-Z</h4>
+                    <div id="letterGrid" class="grid grid-cols-6 gap-2"></div>
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider pt-2">Numbers 1-20</h4>
+                    <div id="numberGrid" class="grid grid-cols-5 gap-2"></div>
+                </div>
+
+                <div id="contentSkins" class="hidden space-y-4">
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Choose Character</h4>
+                    <div id="skinGrid" class="grid grid-cols-2 gap-3"></div>
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider pt-2">Choose Cosmetic Hat</h4>
+                    <div id="hatGrid" class="grid grid-cols-3 gap-2"></div>
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider pt-2">Runner Trail Effect</h4>
+                    <div id="trailGrid" class="grid grid-cols-3 gap-2"></div>
+                </div>
+
+                <div id="contentShop" class="hidden space-y-4">
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Gem Shop & Rewards</h4>
+                    <div id="shopGrid" class="grid grid-cols-1 gap-3"></div>
+                </div>
+
+                <div id="contentThemes" class="hidden space-y-3">
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Aesthetic Background Themes</h4>
+                    <div id="themeGrid" class="space-y-2"></div>
+                </div>
+
+                <div id="contentScores" class="hidden space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Global & Local Leaderboard</h4>
+                        <button id="btnRefreshGlobal" class="text-[10px] bg-pink-500 text-white px-2 py-1 rounded-lg font-bold hover:brightness-110 transition shadow-sm">
+                            <i class="fa-solid fa-rotate mr-1"></i> Refresh Global
+                        </button>
+                    </div>
+                    <div id="scoresGrid" class="space-y-2"></div>
+                </div>
+
+                <div id="contentTrophies" class="hidden space-y-3">
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Achievement Trophy Room</h4>
+                    <div id="trophyGrid" class="space-y-2.5"></div>
+                </div>
+
+                <div id="contentMissions" class="hidden space-y-3">
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Daily Mission Quests</h4>
+                    <div id="missionGrid" class="space-y-2.5"></div>
+                </div>
+
+                <div id="contentModes" class="hidden space-y-3">
+                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Select Game Mode</h4>
+                    <div class="space-y-2">
+                        <button id="modeBtnSingle" class="w-full p-4 glass-card rounded-2xl flex items-center gap-3 border-2 border-purple-400 text-left">
+                            <div class="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center text-lg"><i class="fa-solid fa-user"></i></div>
+                            <div><div class="font-bold">Single Mode & Bosses</div><div class="text-xs text-gray-600">Timed track runs with multi-target spawning!</div></div>
+                        </button>
+                        <button id="modeBtnCom" class="w-full p-4 glass-card rounded-2xl flex items-center gap-3 text-left border-2 border-transparent hover:border-purple-300">
+                            <div class="w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center text-lg"><i class="fa-solid fa-robot"></i></div>
+                            <div><div class="font-bold">Duel vs COM</div><div class="text-xs text-gray-600">Race against an AI computer opponent!</div></div>
+                        </button>
+                        <button id="modeBtnFriend" class="w-full p-4 glass-card rounded-2xl flex items-center gap-3 text-left border-2 border-transparent hover:border-purple-300">
+                            <div class="w-10 h-10 rounded-full bg-cyan-500 text-white flex items-center justify-center text-lg"><i class="fa-solid fa-user-group"></i></div>
+                            <div><div class="font-bold">Duel vs Friend</div><div class="text-xs text-gray-600">P1 (SPACE) vs P2 (ENTER)!</div></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CuteAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+            playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.3) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {}
+            }
+            playHit(judgment, combo = 0) {
+                let pitchMultiplier = 1 + Math.min(1.5, combo * 0.02);
+                if (judgment === 'PERFECT') {
+                    this.playTone(523.25 * pitchMultiplier, 'triangle', 0.1, 0.3);
+                    setTimeout(() => this.playTone(659.25 * pitchMultiplier, 'triangle', 0.1, 0.3), 60);
+                    setTimeout(() => this.playTone(783.99 * pitchMultiplier, 'triangle', 0.15, 0.4), 120);
+                } else if (judgment === 'GREAT') {
+                    this.playTone(587.33 * pitchMultiplier, 'triangle', 0.1, 0.3);
+                    setTimeout(() => this.playTone(739.99 * pitchMultiplier, 'triangle', 0.15, 0.3), 80);
+                } else if (judgment === 'GOOD') {
+                    this.playTone(440 * pitchMultiplier, 'sine', 0.15, 0.2);
+                } else {
+                    this.playTone(180, 'sawtooth', 0.2, 0.2);
+                }
+            }
+            playPowerUp() {
+                this.playTone(600, 'sine', 0.1, 0.3);
+                setTimeout(() => this.playTone(850, 'sine', 0.15, 0.4), 80);
+                setTimeout(() => this.playTone(1200, 'triangle', 0.2, 0.4), 160);
+            }
+            playBossAlarm() {
+                this.playTone(220, 'sawtooth', 0.2, 0.4);
+                setTimeout(() => this.playTone(150, 'sawtooth', 0.3, 0.5), 200);
+            }
+            playSymbolComplete() {
+                this.playTone(523.25, 'sine', 0.12, 0.3);
+                setTimeout(() => this.playTone(659.25, 'sine', 0.12, 0.3), 100);
+                setTimeout(() => this.playTone(1046.50, 'triangle', 0.3, 0.4), 200);
+            }
+            playSkillBlast() {
+                this.playTone(880, 'sine', 0.1, 0.3);
+                setTimeout(() => this.playTone(1320, 'triangle', 0.2, 0.4), 100);
+                setTimeout(() => this.playTone(1760, 'sine', 0.3, 0.5), 200);
+            }
+        }
+
+        const audio = new CuteAudioEngine();
+
+        const TRACK_PATHS = {
+            'Circle': 'M 260, 60 A 200,200 0 1,1 259.9,60 Z',
+            'Heart': 'M 260,130 C 260,65 140,15 65,90 C -15,175 115,295 260,465 C 405,295 535,175 455,90 C 380,15 260,65 260,130 Z',
+            'Infinity': 'M 260,260 C 130,100 15,100 15,260 C 15,420 130,420 260,260 C 390,100 505,100 505,260 C 505,420 390,420 260,260 Z',
+            'Star': 'M 260,25 C 325,155 480,175 365,275 C 400,405 260,340 260,340 C 260,340 120,405 155,275 C 40,175 195,155 260,25 Z',
+            'Square': 'M 60,60 L 460,60 L 460,460 L 60,460 Z',
+            'Triangle': 'M 260,40 L 480,480 L 40,480 Z',
+            'Diamond': 'M 260,30 L 490,260 L 260,490 L 30,260 Z',
+            'Hexagon': 'M 260,50 L 450,150 L 450,370 L 260,470 L 70,370 L 70,150 Z',
+            
+            // Holiday Patterns
+            'Christmas Tree': 'M 260,30 L 320,110 L 290,110 L 350,190 L 320,190 L 390,290 L 300,290 L 300,360 L 220,360 L 220,290 L 130,290 L 200,190 L 170,190 L 230,110 L 200,110 Z M 225,360 L 295,360 L 295,440 L 225,440 Z',
+            'Halloween Pumpkin': 'M 260,40 C 380,40 470,140 450,270 C 430,400 350,475 260,475 C 170,475 90,400 70,270 C 50,140 140,40 260,40 Z',
+            
+            // Transportation Patterns
+            'Car': 'M 100,320 L 150,220 L 370,220 L 420,320 L 440,320 L 440,390 L 80,390 L 80,320 Z M 140,390 A 35,35 0 1,0 210,390 Z M 310,390 A 35,35 0 1,0 380,390 Z',
+            'Rocket Ship': 'M 260,25 C 295,115 330,260 330,370 L 190,370 C 190,260 225,115 260,25 Z M 190,320 L 110,380 L 160,380 Z M 330,320 L 410,380 L 360,380 Z M 225,430 L 295,430 L 260,475 Z',
+            'Airplane': 'M 240,45 L 280,45 L 280,180 L 460,250 L 460,295 L 280,250 L 280,410 L 330,445 L 330,475 L 260,450 L 190,475 L 190,445 L 240,410 L 240,250 L 60,295 L 60,250 L 240,180 Z',
+            'Train': 'M 110,130 L 410,130 L 410,360 L 110,360 Z M 150,170 L 220,170 L 220,250 L 150,250 Z M 260,170 L 370,170 L 370,250 L 260,250 Z M 150,400 A 25,25 0 1,0 200,400 Z M 320,400 A 25,25 0 1,0 370,400 Z',
+
+            'A': 'M 260,45 L 455,475 L 360,475 L 310,340 L 210,340 L 160,475 L 65,475 Z M 225,265 L 295,265 L 260,140 Z',
+            'B': 'M 100,45 L 310,45 C 425,45 425,240 310,240 C 440,240 440,475 310,475 L 100,475 Z',
+            'C': 'M 455,115 C 360,13 115,25 90,195 C 65,365 300,505 455,400',
+            'D': 'M 100,45 L 310,45 C 455,45 455,475 310,475 L 100,475 Z',
+            'E': 'M 390,65 L 100,65 L 100,455 L 390,455 M 100,260 L 340,260',
+            'F': 'M 390,65 L 100,65 L 100,455 M 100,260 L 340,260',
+            'G': 'M 455,115 C 360,13 115,25 90,195 C 65,365 300,505 455,400 L 455,285 L 300,285',
+            'H': 'M 100,45 L 100,475 M 420,45 L 420,475 M 100,260 L 420,260',
+            'I': 'M 170,65 L 350,65 M 260,65 L 260,455 M 170,455 L 350,455',
+            'J': 'M 350,65 L 350,390 C 350,495 170,495 130,390 L 130,340',
+            'K': 'M 100,45 L 100,475 M 420,65 L 100,260 L 420,455',
+            'L': 'M 100,45 L 100,475 L 420,475',
+            'M': 'M 90,475 L 90,45 L 260,260 L 430,45 L 430,475',
+            'N': 'M 100,475 L 100,45 L 420,475 L 420,45',
+            'O': 'M 260,50 C 100,50 100,470 260,470 C 420,470 420,50 260,50 Z',
+            'P': 'M 100,45 L 320,45 C 425,45 425,270 320,270 L 100,270 L 100,475',
+            'Q': 'M 260,50 C 100,50 100,470 260,470 C 420,470 420,50 260,50 Z M 300,325 L 455,480',
+            'R': 'M 100,45 L 320,45 C 425,45 425,270 320,270 L 100,270 L 100,475 M 260,270 L 420,475',
+            'S': 'M 420,115 C 365,13 115,50 130,205 C 145,335 405,260 395,390 C 385,505 130,480 90,390',
+            'T': 'M 90,65 L 430,65 M 260,65 L 260,455',
+            'U': 'M 100,65 L 100,375 C 100,485 420,485 420,375 L 420,65',
+            'V': 'M 80,65 L 260,455 L 440,65',
+            'W': 'M 65,65 L 145,455 L 260,285 L 375,455 L 455,65',
+            'X': 'M 100,65 L 420,455 M 420,65 L 100,455',
+            'Y': 'M 100,65 L 260,260 L 420,65 M 260,260 L 260,455',
+            'Z': 'M 80,65 L 440,65 L 80,455 L 440,455',
+            '1': 'M 180,140 L 260,65 L 260,455',
+            '2': 'M 130,140 C 130,50 390,50 390,195 C 390,340 100,455 420,455',
+            '3': 'M 130,90 L 400,90 L 260,270 L 400,270 C 450,270 450,455 260,455 L 130,455',
+            '4': 'M 340,50 L 100,310 L 440,310 M 340,50 L 340,455',
+            '5': 'M 400,75 L 140,75 L 140,245 C 400,235 400,465 140,455',
+            '6': 'M 375,90 C 140,50 100,465 340,455 C 440,455 440,285 320,285 C 170,285 170,285 170,285',
+            '7': 'M 100,75 L 430,75 L 235,455',
+            '8': 'M 260,260 C 140,165 140,50 260,50 C 380,50 380,165 260,260 C 140,355 140,470 260,470 C 380,470 380,355 260,260 Z',
+            '9': 'M 375,220 C 450,130 400,35 260,35 C 120,35 105,180 105,260 C 105,350 375,465 375,220 Z',
+            '10': 'M 130,140 L 180,75 L 180,455 M 310,75 C 240,75 240,455 310,455 C 380,455 380,75 310,75 Z',
+            '11': 'M 180,90 L 230,50 L 230,455 M 310,90 L 360,50 L 360,455',
+            '12': 'M 140,140 L 190,75 L 310,75 L 310,140 L 140,455 L 340,455',
+            '13': 'M 150,90 L 310,90 L 235,260 L 325,260 L 325,455 L 150,455',
+            '14': 'M 150,75 L 150,260 L 310,260 M 285,60 L 285,455',
+            '15': 'M 325,75 L 150,75 L 150,230 L 325,230 C 375,230 375,455 150,455',
+            '16': 'M 230,75 L 150,140 L 150,455 M 350,115 C 250,90 235,465 325,455 C 390,455 400,335 325,300 C 260,275 250,300 325,300',
+            '17': 'M 140,75 L 340,75 L 235,455',
+            '18': 'M 235,260 C 155,180 155,75 235,75 C 315,75 315,180 235,260 C 155,340 155,445 235,445 C 315,445 315,340 235,260 Z M 360,75 L 360,445',
+            '19': 'M 210,140 C 140,140 140,65 210,65 C 280,65 280,140 210,140 Z M 210,65 L 210,455 L 340,455',
+            '20': 'M 235,75 C 130,75 130,245 235,260 C 340,275 130,455 340,455 M 410,75 C 345,75 345,455 410,455 C 475,455 475,75 410,75 Z'
+        };
+
+        const CHARACTERS = {
+            'cat': { 
+                name: 'Mochi Cat', 
+                cost: 0,
+                unlocked: true,
+                svg: `<g transform="translate(-25, -25)">
+                    <polygon points="8,18 2,2 20,10" fill="#FFB7B2"/>
+                    <polygon points="42,18 48,2 30,10" fill="#FFB7B2"/>
+                    <circle cx="25" cy="26" r="20" fill="#FFF5F5" stroke="#FF007F" stroke-width="2"/>
+                    <circle cx="16" cy="22" r="2.5" fill="#222"/>
+                    <circle cx="34" cy="22" r="2.5" fill="#222"/>
+                    <circle cx="15" cy="21" r="0.8" fill="#FFF"/>
+                    <circle cx="33" cy="21" r="0.8" fill="#FFF"/>
+                    <ellipse cx="13" cy="26" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <ellipse cx="37" cy="26" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <polygon points="25,26 23,24.5 27,24.5" fill="#FF69B4"/>
+                    <path d="M 22,29 Q 25,32 28,29" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round"/>
+                </g>` 
+            },
+            'bunny': { 
+                name: 'Berry Bunny', 
+                cost: 0,
+                unlocked: true,
+                svg: `<g transform="translate(-25, -30)">
+                    <ellipse cx="16" cy="10" rx="5" ry="14" fill="#FFFFFF" stroke="#00DFD8" stroke-width="2"/>
+                    <ellipse cx="16" cy="11" rx="2.5" ry="9" fill="#FFB6C1"/>
+                    <ellipse cx="34" cy="10" rx="5" ry="14" fill="#FFFFFF" stroke="#00DFD8" stroke-width="2"/>
+                    <ellipse cx="34" cy="11" rx="2.5" ry="9" fill="#FFB6C1"/>
+                    <circle cx="25" cy="30" r="18" fill="#FFFFFF" stroke="#00DFD8" stroke-width="2"/>
+                    <circle cx="18" cy="26" r="2.5" fill="#222"/>
+                    <circle cx="32" cy="26" r="2.5" fill="#222"/>
+                    <circle cx="17" cy="25" r="0.8" fill="#FFF"/>
+                    <circle cx="31" cy="25" r="0.8" fill="#FFF"/>
+                    <ellipse cx="14" cy="30" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <ellipse cx="36" cy="30" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <ellipse cx="25" cy="29" rx="2" ry="1.3" fill="#FF69B4"/>
+                    <path d="M 22,33 Q 25,35 28,33" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round"/>
+                </g>` 
+            },
+            'boba': { 
+                name: 'Boba Bear', 
+                cost: 50,
+                unlocked: false,
+                svg: `<g transform="translate(-25, -25)">
+                    <circle cx="13" cy="8" r="6" fill="#7928CA"/>
+                    <circle cx="37" cy="8" r="6" fill="#7928CA"/>
+                    <rect x="10" y="12" width="30" height="32" rx="8" fill="#FFF" stroke="#7928CA" stroke-width="2"/>
+                    <rect x="22" y="2" width="6" height="12" rx="2" fill="#FF007F" transform="rotate(10 25 10)"/>
+                    <circle cx="17" cy="22" r="2.5" fill="#222"/>
+                    <circle cx="33" cy="22" r="2.5" fill="#222"/>
+                    <circle cx="16" cy="21" r="0.8" fill="#FFF"/>
+                    <circle cx="32" cy="21" r="0.8" fill="#FFF"/>
+                    <ellipse cx="14" cy="26" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <ellipse cx="36" cy="26" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <circle cx="25" cy="25" r="1.5" fill="#222"/>
+                    <path d="M 22,29 Q 25,32 28,29" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round"/>
+                </g>` 
+            },
+            'panda': { 
+                name: 'Panda Pal', 
+                cost: 100,
+                unlocked: false,
+                svg: `<g transform="translate(-25, -25)">
+                    <circle cx="10" cy="12" r="7" fill="#222"/>
+                    <circle cx="40" cy="12" r="7" fill="#222"/>
+                    <circle cx="25" cy="26" r="20" fill="#FFF" stroke="#222" stroke-width="2"/>
+                    <ellipse cx="17" cy="24" rx="5" ry="6" fill="#222" transform="rotate(-15 17 24)"/>
+                    <ellipse cx="33" cy="24" rx="5" ry="6" fill="#222" transform="rotate(15 33 24)"/>
+                    <circle cx="17" cy="24" r="2" fill="#FFF"/>
+                    <circle cx="33" cy="24" r="2" fill="#FFF"/>
+                    <ellipse cx="12" cy="30" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <ellipse cx="38" cy="30" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <ellipse cx="25" cy="28" rx="2" ry="1.3" fill="#222"/>
+                    <path d="M 22,31 Q 25,33 28,31" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round"/>
+                </g>` 
+            },
+            'unicorn': { 
+                name: 'Magic Unicorn', 
+                cost: 150,
+                unlocked: false,
+                svg: `<g transform="translate(-25, -30)">
+                    <polygon points="25,-6 32,14 18,14" fill="#FFD700" stroke="#FFA500" stroke-width="1"/>
+                    <path d="M 12,18 Q 8,24 14,28" fill="none" stroke="#FF69B4" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="25" cy="30" r="18" fill="#FFF0F5" stroke="#FF69B4" stroke-width="2"/>
+                    <circle cx="18" cy="26" r="2.5" fill="#222"/>
+                    <circle cx="32" cy="26" r="2.5" fill="#222"/>
+                    <circle cx="17" cy="25" r="0.8" fill="#FFF"/>
+                    <circle cx="31" cy="25" r="0.8" fill="#FFF"/>
+                    <ellipse cx="14" cy="30" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <ellipse cx="36" cy="30" rx="3" ry="1.5" fill="#FFB6C1" opacity="0.8"/>
+                    <ellipse cx="25" cy="29" rx="2" ry="1.3" fill="#FF69B4"/>
+                    <path d="M 22,33 Q 25,36 28,33" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round"/>
+                </g>` 
+            }
+        };
+
+        const HATS = {
+            'none': { name: 'No Hat', cost: 0, unlocked: true, svg: '' },
+            'crown': { 
+                name: 'Royal Crown', 
+                cost: 80, 
+                unlocked: false, 
+                svg: `<g transform="translate(25, 2) scale(0.6)"><polygon points="10,10 15,25 35,25 40,10 25,18" fill="#FFD700" stroke="#FFA500" stroke-width="2"/><circle cx="10" cy="8" r="3" fill="#FF007F"/><circle cx="25" cy="14" r="3" fill="#00FFFF"/><circle cx="40" cy="8" r="3" fill="#00FFCC"/></g>` 
+            },
+            'wizard': { 
+                name: 'Wizard Cap', 
+                cost: 120, 
+                unlocked: false, 
+                svg: `<g transform="translate(25, -2) scale(0.6)"><polygon points="25,-12 8,16 42,16" fill="#7928CA" stroke="#FF007F" stroke-width="2"/><ellipse cx="25" cy="16" rx="18" ry="4" fill="#7928CA"/><circle cx="25" cy="0" r="2" fill="#FFD700"/><circle cx="20" cy="8" r="1.5" fill="#00FFFF"/></g>` 
+            },
+            'bow': { 
+                name: 'Pink Bow', 
+                cost: 60, 
+                unlocked: false, 
+                svg: `<g transform="translate(25, 8) scale(0.6)"><circle cx="0" cy="0" r="5" fill="#FF69B4"/><polygon points="-5,0 -16,-10 -12,10" fill="#FF1493"/><polygon points="5,0 16,-10 12,10" fill="#FF1493"/></g>` 
+            }
+        };
+
+        const TRAILS = {
+            'rainbow': { name: 'Rainbow Sparkle', cost: 0, unlocked: true, color: '#FF007F' },
+            'gold': { name: 'Golden Glow', cost: 60, unlocked: false, color: '#FFD700' },
+            'bubble': { name: 'Aqua Bubble', cost: 60, unlocked: false, color: '#00FFFF' },
+            'firefly': { name: 'Firefly Spark', cost: 100, unlocked: false, color: '#ADFF2F' }
+        };
+
+        const BOSSES = [
+            { name: 'NEON SHADOW DRAGON', emoji: '👾', maxHp: 10 },
+            { name: 'CYBER GHOST', emoji: '👻', maxHp: 12 },
+            { name: 'SUGAR RUSH SLIME', emoji: '🟢', maxHp: 8 }
+        ];
+
+        const THEMES = {
+            'cyber': { name: 'Cyberpunk Synthwave', class: 'bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950' },
+            'candy': { name: 'Pastel Candy Land', class: 'bg-gradient-to-br from-pink-400 via-purple-400 to-indigo-500' },
+            'starry': { name: 'Magical Starry Night', class: 'bg-gradient-to-br from-gray-900 via-blue-950 to-slate-900' }
+        };
+
+        class CuteTrackGame {
+            constructor() {
+                this.score = 0;
+                this.scoreP2 = 0;
+                this.gems = parseInt(localStorage.getItem('trackrunner_gems')) || 150;
+                this.combo = 0;
+                this.maxComboReached = 0;
+                this.perfectCount = 0;
+                this.totalHitsAttempted = 0;
+                this.totalHitsSuccessful = 0;
+                
+                this.speed = 0.27; 
+                this.progress = 0;
+                this.direction = 1;
+                this.progressP2 = 0.05;
+                this.directionP2 = 1;
+                this.isRunning = false;
+                this.isPaused = false; 
+                this.gameMode = 'single';
+                this.currentTrackKey = 'Circle';
+                this.currentSkinKey = 'cat';
+                this.currentHatKey = 'none';
+                this.currentThemeKey = 'cyber';
+                this.currentTrailKey = 'rainbow';
+
+                this.currentLevel = 1;
+
+                this.playerHp = 6;
+                this.maxPlayerHp = 6;
+                this.hasShield = false;
+                this.hasGhost = false;
+                this.feverActive = false;
+                this.feverTimer = 0;
+                this.reviveUsedThisGame = false;
+                
+                this.skillCooldown = 0.0;
+                this.skillCooldownMax = 10.0;
+
+                this.powerUpLevel = parseInt(localStorage.getItem('trackrunner_pow_lvl')) || 1;
+
+                this.hitsOnCurrentSymbol = 0;
+                this.targetHitsNeeded = 5;
+                this.pathLength = 0;
+
+                this.targetHitTimeLeft = 10.0;
+                this.targetHitMaxTime = 10.0;
+
+                this.activeTargetsP1 = [];
+                this.activeTargetsP2 = [];
+                this.activePowerUps = [];
+                this.activeHazards = [];
+
+                this.isBossFight = false;
+                this.bossHp = 10;
+                this.bossMaxHp = 10;
+                this.currentBoss = BOSSES[0];
+                this.bossSkillTimer = 0;
+
+                // Performance optimization throttling parameters
+                this.lastTime = 0;
+                this.frameInterval = 1000 / 45; // Capped to 45 FPS to reduce mobile CPU load and heating
+                this.timeAccumulator = 0;
+
+                let savedSkins = JSON.parse(localStorage.getItem('trackrunner_skins'));
+                if (savedSkins) {
+                    Object.keys(savedSkins).forEach(k => {
+                        if (CHARACTERS[k]) CHARACTERS[k].unlocked = savedSkins[k];
+                    });
+                }
+
+                let savedHats = JSON.parse(localStorage.getItem('trackrunner_hats'));
+                if (savedHats) {
+                    Object.keys(savedHats).forEach(k => {
+                        if (HATS[k]) HATS[k].unlocked = savedHats[k];
+                    });
+                }
+
+                let savedTrails = JSON.parse(localStorage.getItem('trackrunner_trails'));
+                if (savedTrails) {
+                    Object.keys(savedTrails).forEach(k => {
+                        if (TRAILS[k]) TRAILS[k].unlocked = savedTrails[k];
+                    });
+                }
+
+                this.highScores = JSON.parse(localStorage.getItem('trackrunner_highscores')) || [];
+                this.globalScores = [];
+
+                this.achievements = JSON.parse(localStorage.getItem('trackrunner_achievements')) || {
+                    firstRun: false,
+                    combo50: false,
+                    bossSlayer: false
+                };
+
+                this.missions = JSON.parse(localStorage.getItem('trackrunner_missions')) || {
+                    completeRuns: { desc: 'Complete 3 runs', target: 3, current: 0 },
+                    score2000: { desc: 'Score over 2,000 points', target: 2000, current: 0 }
+                };
+
+                this.svgTrack = document.getElementById('trackPath');
+                this.svgPipTrack = document.getElementById('trackPathPip');
+                this.charGroup = document.getElementById('characterGroup');
+                this.targetsGroup = document.getElementById('targetsGroup');
+                this.powerUpsGroup = document.getElementById('powerUpsGroup');
+                
+                this.bossAvatarGroup = document.getElementById('bossAvatarGroup');
+                this.bossAvatarEmoji = document.getElementById('bossAvatarEmoji');
+                this.bossHpContainer = document.getElementById('bossHpContainer');
+                this.bossHpBar = document.getElementById('bossHpBar');
+                this.bossHpText = document.getElementById('bossHpText');
+                this.bossNameLabel = document.getElementById('bossNameLabel');
+                
+                this.timerBar = document.getElementById('timerBar');
+                this.timerText = document.getElementById('timerText');
+                this.heartContainer = document.getElementById('heartContainer');
+                this.shieldBadge = document.getElementById('shieldBadge');
+                this.ghostBadge = document.getElementById('ghostBadge');
+                this.skillCooldownText = document.getElementById('skillCooldownText');
+                
+                this.scoreDisplay = document.getElementById('scoreDisplay');
+                this.gemDisplay = document.getElementById('gemDisplay');
+                this.levelDisplay = document.getElementById('levelDisplay');
+                this.comboDisplay = document.getElementById('comboDisplay');
+                this.comboDisplayFooter = document.getElementById('comboDisplayFooter');
+                this.targetCountDisplay = document.getElementById('targetCountDisplay');
+                this.judgmentOverlay = document.getElementById('judgmentOverlay');
+                this.startPrompt = document.getElementById('startPrompt');
+                this.currentTrackLabel = document.getElementById('currentTrackLabel');
+                this.btnP2Action = document.getElementById('btnP2Action');
+                this.pipMiniView = document.getElementById('pipMiniView');
+                this.summaryModal = document.getElementById('summaryModal');
+                this.reviveModal = document.getElementById('reviveModal');
+                this.dailyRewardModal = document.getElementById('dailyRewardModal');
+                this.adModal = document.getElementById('adModal');
+
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.renderTrack(this.currentTrackKey);
+                this.renderCharacters();
+                this.buildTrackSelectors();
+                this.buildSkinSelectors();
+                this.buildShopSelectors();
+                this.buildThemeSelectors();
+                this.fetchGlobalLeaderboard();
+                this.buildTrophyList();
+                this.buildMissionsList();
+                this.setGameMode('single');
+                this.updateHpBar();
+                this.updateGemDisplay();
+                this.updateLevelDisplay();
+                this.checkDailyLogin();
+                
+                requestAnimationFrame((t) => this.gameLoop(t));
+            }
+
+            async fetchGlobalLeaderboard() {
+                try {
+                    const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://jsonplaceholder.typicode.com/users'));
+                    if (response.ok) {
+                        this.globalScores = [
+                            { name: '🌟 StarRunner', score: 9850, skin: 'unicorn' },
+                            { name: '🐱 MochiKing', score: 8420, skin: 'cat' },
+                            { name: '🐰 BerryQueen', score: 7600, skin: 'bunny' },
+                            { name: '🐼 PandaPro', score: 6350, skin: 'panda' },
+                            { name: '🧋 BobaBoss', score: 5120, skin: 'boba' }
+                        ];
+                    }
+                } catch (e) {
+                    this.globalScores = [];
+                }
+                this.buildHighScoresList();
+            }
+
+            checkDailyLogin() {
+                let lastLogin = localStorage.getItem('trackrunner_last_login');
+                let today = new Date().toDateString();
+                if (lastLogin !== today) {
+                    this.dailyRewardModal.classList.remove('hidden');
+                    this.isPaused = true; 
+                }
+            }
+
+            updateGemDisplay() {
+                this.gemDisplay.innerText = this.gems;
+                localStorage.setItem('trackrunner_gems', this.gems);
+            }
+
+            updateLevelDisplay() {
+                if (this.levelDisplay) {
+                    this.levelDisplay.innerText = this.currentLevel;
+                }
+            }
+
+            getRandomHitsNeeded() {
+                return Math.floor(Math.random() * 3) + 5;
+            }
+
+            renderTrack(trackKey) {
+                this.currentTrackKey = trackKey;
+                this.hitsOnCurrentSymbol = 0;
+                this.targetHitsNeeded = this.getRandomHitsNeeded();
+                
+                const pathData = TRACK_PATHS[trackKey] || TRACK_PATHS['Circle'];
+                this.svgTrack.setAttribute('d', pathData);
+                document.getElementById('trackShadow').setAttribute('d', pathData);
+                document.getElementById('trackBackgroundFill').setAttribute('d', pathData);
+                document.getElementById('trackInnerLine').setAttribute('d', pathData);
+                this.svgPipTrack.setAttribute('d', pathData);
+
+                let extrusionHTML = '';
+                for (let i = 1; i <= 5; i++) {
+                    let offset = i * 4;
+                    extrusionHTML += `<path d="${pathData}" transform="translate(${offset}, ${offset})" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" />`;
+                }
+                document.getElementById('trackExtrusions').innerHTML = extrusionHTML;
+
+                this.pathLength = this.svgTrack.getTotalLength();
+                this.currentTrackLabel.innerText = `Track: ${trackKey}`;
+
+                this.spawnNewTargetsRandomly(1);
+                this.spawnNewTargetsRandomly(2);
+                this.spawnPowerUp();
+                this.spawnHazard();
+                this.updateTargetDisplay();
+            }
+
+            spawnPowerUp() {
+                let threshold = this.isBossFight ? 0.95 : 0.8;
+                if (Math.random() < threshold) {
+                    let types = ['speed', 'shield', 'freeze', 'magnet', 'heart', 'ghost'];
+                    if (this.isBossFight && Math.random() < 0.6) {
+                        types = ['shield', 'heart', 'freeze'];
+                    }
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    const progress = Math.random();
+                    const pt = this.svgTrack.getPointAtLength(progress * this.pathLength);
+                    this.activePowerUps = [{ type, progress, cx: pt.x, cy: pt.y }];
+                } else {
+                    this.activePowerUps = [];
+                }
+                this.redrawPowerUpsSVG();
+            }
+
+            spawnHazard() {
+                if (Math.random() < 0.5) {
+                    const progress = (Math.random() * 0.8) + 0.1;
+                    const pt = this.svgTrack.getPointAtLength(progress * this.pathLength);
+                    this.activeHazards = [{ progress, cx: pt.x, cy: pt.y, velocity: (Math.random() < 0.5 ? 1 : -1) * 0.04 }];
+                } else {
+                    this.activeHazards = [];
+                }
+                this.redrawHazardsSVG();
+            }
+
+            redrawPowerUpsSVG() {
+                let html = '';
+                this.activePowerUps.forEach(p => {
+                    let icon = '⚡';
+                    let color = '#FFD700';
+                    if (p.type === 'shield') { icon = '🛡️'; color = '#00FFFF'; }
+                    if (p.type === 'freeze') { icon = '❄️'; color = '#00BFFF'; }
+                    if (p.type === 'magnet') { icon = '🧲'; color = '#FF4500'; }
+                    if (p.type === 'heart')  { icon = '❤️'; color = '#FF1493'; }
+                    if (p.type === 'ghost')  { icon = '👻'; color = '#9370DB'; }
+                    html += `<g transform="translate(${p.cx}, ${p.cy})"><circle cx="0" cy="0" r="16" fill="${color}" opacity="0.9" filter="url(#superGlow)"/><text x="0" y="5" text-anchor="middle" font-size="14">${icon}</text></g>`;
+                });
+                this.powerUpsGroup.innerHTML = html;
+            }
+
+            redrawHazardsSVG() {
+                let html = '';
+                this.activeHazards.forEach(h => {
+                    html += `<g transform="translate(${h.cx}, ${h.cy})"><polygon points="0,-16 14,12 -14,12" fill="#FF2255" filter="url(#superGlow)"/><text x="0" y="5" text-anchor="middle" font-size="12" fill="#fff">⚠️</text></g>`;
+                });
+                this.powerUpsGroup.innerHTML += html;
+            }
+
+            spawnNewTargetsRandomly(playerNum) {
+                let targetsArr = playerNum === 1 ? this.activeTargetsP1 : this.activeTargetsP2;
+                targetsArr.length = 0;
+                let count = Math.floor(Math.random() * 2) + 1;
+                
+                if (playerNum === 1) {
+                    let isDoubleMode = this.gameMode !== 'single';
+                    let baseTime = isDoubleMode ? 13.0 : 10.0;
+                    this.targetHitMaxTime = count === 2 ? baseTime + 3.0 : baseTime;
+                    this.targetHitTimeLeft = this.targetHitMaxTime;
+                }
+                
+                for (let i = 0; i < count; i++) {
+                    let prog = 0.15 + Math.random() * 0.7;
+                    if (i === 1 && targetsArr.length > 0 && Math.abs(prog - targetsArr[0].progress) < 0.25) {
+                        prog = (prog + 0.35) % 1.0;
+                    }
+                    let velocity = (Math.random() < 0.5 ? 1 : -1) * (0.05 + Math.random() * 0.08);
+                    this.createTargetObject(playerNum, prog, i, velocity);
+                }
+            }
+
+            createTargetObject(playerNum, prog, id, velocity) {
+                let targetsArr = playerNum === 1 ? this.activeTargetsP1 : this.activeTargetsP2;
+                targetsArr.push({ id, progress: prog, velocity, cx: 0, cy: 0 });
+                this.updateTargetPositions(playerNum);
+            }
+
+            updateTargetPositions(playerNum) {
+                let targetsArr = playerNum === 1 ? this.activeTargetsP1 : this.activeTargetsP2;
+                if (!targetsArr) return;
+                targetsArr.forEach((t) => {
+                    const targetPoint = this.svgTrack.getPointAtLength(t.progress * this.pathLength);
+                    t.cx = targetPoint.x;
+                    t.cy = targetPoint.y;
+                });
+                this.redrawTargetsSVG(playerNum);
+            }
+
+            redrawTargetsSVG(playerNum) {
+                let targetsArr = playerNum === 1 ? this.activeTargetsP1 : this.activeTargetsP2;
+                let html = '';
+                if (!targetsArr) return;
+                targetsArr.forEach((t) => {
+                    html += `<g transform="translate(${t.cx}, ${t.cy})">
+                        <circle cx="0" cy="0" r="20" fill="#E11D48" stroke="#FFFFFF" stroke-width="3" />
+                        <circle cx="0" cy="0" r="14" fill="#FFFFFF" />
+                        <circle cx="0" cy="0" r="8" fill="#E11D48" />
+                        <circle cx="0" cy="0" r="3" fill="#FACC15" />
+                    </g>`;
+                });
+                if (playerNum === 1) {
+                    this.targetsGroup.innerHTML = html;
+                } else if (this.gameMode !== 'single') {
+                    document.getElementById('targetsGroupPip').innerHTML = html;
+                }
+            }
+
+            renderCharacters() {
+                const skinP1 = CHARACTERS[this.currentSkinKey];
+                const hatP1 = HATS[this.currentHatKey];
+                let combinedSvg = skinP1.svg + (hatP1 ? hatP1.svg : '');
+                this.charGroup.innerHTML = combinedSvg;
+                document.getElementById('promptCharacterIcon').innerHTML = `<svg viewBox="-30 -35 60 60" class="w-full h-full">${combinedSvg}</svg>`;
+                if (this.gameMode !== 'single') {
+                    document.getElementById('characterGroupPip').innerHTML = CHARACTERS['bunny'].svg;
+                }
+            }
+
+            setupEventListeners() {
+                const handleP1Action = (e) => {
+                    if (e) e.preventDefault();
+                    if (this.isPaused) return; 
+                    audio.init();
+                    if (!this.isRunning) { this.startGame(); return; }
+                    this.checkTiming(1);
+                };
+                const handleP2Action = (e) => {
+                    if (e) e.preventDefault();
+                    if (this.isPaused) return;
+                    audio.init();
+                    if (this.gameMode !== 'single' && this.isRunning) { this.checkTiming(2); }
+                };
+                const handleSpecialSkill = (e) => {
+                    if (e) e.preventDefault();
+                    if (this.isPaused) return;
+                    audio.init();
+                    if (this.isRunning) { this.triggerSpecialSkill(); }
+                };
+
+                document.getElementById('btnTapAction').addEventListener('click', handleP1Action);
+                document.getElementById('btnSpecialSkill').addEventListener('click', handleSpecialSkill);
+                this.btnP2Action.addEventListener('click', handleP2Action);
+                document.getElementById('playArea').addEventListener('click', handleP1Action);
+
+                window.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        if (this.isPaused) return;
+                        audio.init();
+                        if (!this.isRunning) { this.startGame(); } else { handleP1Action(); }
+                    } else if (e.code === 'KeyQ' || e.code === 'KeyE') {
+                        e.preventDefault();
+                        if (this.isPaused) return;
+                        audio.init();
+                        handleSpecialSkill();
+                    } else if (e.code === 'Enter' || e.code === 'ShiftRight') {
+                        e.preventDefault();
+                        if (this.isPaused) return;
+                        audio.init();
+                        handleP2Action();
+                    }
+                });
+
+                document.getElementById('btnStartGame').addEventListener('click', (e) => { 
+                    e.stopPropagation(); 
+                    audio.init(); 
+                    this.startGame(); 
+                });
+
+                document.getElementById('btnDismissSummary').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.summaryModal.classList.add('hidden');
+                    this.startPrompt.classList.remove('opacity-0', 'pointer-events-none');
+                    this.isPaused = false;
+                });
+
+                document.getElementById('btnClaimDaily').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.gems += 25;
+                    this.updateGemDisplay();
+                    localStorage.setItem('trackrunner_last_login', new Date().toDateString());
+                    this.dailyRewardModal.classList.add('hidden');
+                    this.isPaused = false; 
+                });
+
+                document.getElementById('btnReviveCoin').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const reviveCost = 30;
+                    if (this.gems >= reviveCost) {
+                        this.gems -= reviveCost;
+                        this.updateGemDisplay();
+                        this.executeRevive(3);
+                    } else {
+                        alert('Not enough gems to buy HP!');
+                    }
+                });
+
+                document.getElementById('btnReviveAd').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.reviveUsedThisGame) {
+                        alert('Ad revive already used this game!');
+                        return;
+                    }
+                    this.reviveUsedThisGame = true;
+                    this.reviveModal.classList.add('hidden');
+                    this.watchRewardAd('revive_full_heal');
+                });
+
+                document.getElementById('btnDeclineRevive').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.reviveModal.classList.add('hidden');
+                    this.showSummaryScreen();
+                });
+
+                document.getElementById('btnRefreshGlobal').addEventListener('click', () => {
+                    this.fetchGlobalLeaderboard();
+                });
+
+                document.getElementById('btnRandomTrack').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const allKeys = Object.keys(TRACK_PATHS);
+                    this.renderTrack(allKeys[Math.floor(Math.random() * allKeys.length)]);
+                });
+
+                document.getElementById('btnSound').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    audio.muted = !audio.muted;
+                    document.getElementById('btnSound').querySelector('i').className = audio.muted ? 'fa-solid fa-volume-xmark text-base text-gray-400' : 'fa-solid fa-volume-high text-base';
+                });
+
+                const menuModal = document.getElementById('menuModal');
+                
+                document.getElementById('btnOpenMenu').addEventListener('click', () => {
+                    menuModal.classList.remove('hidden');
+                    this.isPaused = true;
+                });
+
+                document.getElementById('btnCloseMenu').addEventListener('click', () => {
+                    menuModal.classList.add('hidden');
+                    this.isPaused = false;
+                });
+
+                document.getElementById('tabTracks').addEventListener('click', (e) => this.switchTab('tracks', e.target));
+                document.getElementById('tabSkins').addEventListener('click', (e) => this.switchTab('skins', e.target));
+                document.getElementById('tabShop').addEventListener('click', (e) => this.switchTab('shop', e.target));
+                document.getElementById('tabThemes').addEventListener('click', (e) => this.switchTab('themes', e.target));
+                document.getElementById('tabScores').addEventListener('click', (e) => this.switchTab('scores', e.target));
+                document.getElementById('tabTrophies').addEventListener('click', (e) => this.switchTab('trophies', e.target));
+                document.getElementById('tabMissions').addEventListener('click', (e) => this.switchTab('missions', e.target));
+                document.getElementById('tabModes').addEventListener('click', (e) => this.switchTab('modes', e.target));
+
+                document.getElementById('modeBtnSingle').addEventListener('click', () => { 
+                    this.setGameMode('single'); 
+                    menuModal.classList.add('hidden'); 
+                    this.isPaused = false; 
+                });
+                document.getElementById('modeBtnCom').addEventListener('click', () => { 
+                    this.setGameMode('com'); 
+                    menuModal.classList.add('hidden'); 
+                    this.isPaused = false; 
+                });
+                document.getElementById('modeBtnFriend').addEventListener('click', () => { 
+                    this.setGameMode('friend'); 
+                    menuModal.classList.add('hidden'); 
+                    this.isPaused = false; 
+                });
+            }
+
+            executeRevive(hpToAdd) {
+                this.playerHp = Math.min(this.maxPlayerHp, hpToAdd);
+                this.updateHpBar();
+                this.reviveModal.classList.add('hidden');
+                this.isRunning = true;
+                this.isPaused = false;
+                this.targetHitTimeLeft = this.targetHitMaxTime;
+                this.showJudgmentText('SECOND CHANCE! REVIVED! ✨');
+                audio.playPowerUp();
+            }
+
+            triggerSpecialSkill() {
+                if (this.skillCooldown > 0) {
+                    this.showJudgmentText('SKILL ON COOLDOWN! ⏳');
+                    return;
+                }
+                this.skillCooldown = this.skillCooldownMax;
+                audio.playSkillBlast();
+                this.showJudgmentText('✨ SHOCKWAVE BLAST! ✨');
+
+                if (this.activeHazards.length > 0) {
+                    this.activeHazards = [];
+                    this.redrawHazardsSVG();
+                }
+
+                if (this.activeTargetsP1.length > 0) {
+                    let t = this.activeTargetsP1[0];
+                    this.showFloatingPopup('+150 PTS', t.cx, t.cy);
+                    this.score += 150;
+                    this.activeTargetsP1.shift();
+                    if (this.isBossFight) {
+                        this.bossHp -= 3;
+                        this.updateBossHpBar();
+                        if (this.bossHp <= 0) {
+                            this.checkBossVictory();
+                        }
+                    } else {
+                        this.hitsOnCurrentSymbol++;
+                        if (this.hitsOnCurrentSymbol >= this.targetHitsNeeded) {
+                            audio.playSymbolComplete();
+                            this.currentLevel++;
+                            this.updateLevelDisplay();
+                            this.showJudgmentText(`LEVEL ${this.currentLevel}! ✨`);
+                            
+                            if (this.currentLevel % 7 === 0) {
+                                setTimeout(() => this.triggerBossBattle(), 500);
+                            } else {
+                                setTimeout(() => {
+                                    const allKeys = Object.keys(TRACK_PATHS);
+                                    let nextKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+                                    this.renderTrack(nextKey);
+                                }, 600);
+                            }
+                        } else {
+                            if (this.activeTargetsP1.length === 0) this.spawnNewTargetsRandomly(1);
+                            else this.redrawTargetsSVG(1);
+                        }
+                    }
+                }
+                this.spawnParticles();
+                this.updateHUD();
+                this.updateTargetDisplay();
+            }
+
+            checkBossVictory() {
+                audio.playSymbolComplete();
+                this.showJudgmentText('VICTORY! +1000 PTS! 🎉');
+                this.score += 1000;
+                this.gems += 20;
+                this.updateGemDisplay();
+                this.speed += 0.01; 
+                this.isBossFight = false;
+                this.bossAvatarGroup.classList.add('hidden');
+                this.bossHpContainer.classList.add('hidden');
+                this.achievements.bossSlayer = true;
+                this.saveAchievements();
+                
+                this.currentLevel++;
+                this.updateLevelDisplay();
+                setTimeout(() => {
+                    const allKeys = Object.keys(TRACK_PATHS);
+                    let nextKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+                    this.renderTrack(nextKey);
+                }, 600);
+            }
+
+            watchRewardAd(rewardType, targetKey) {
+                this.adModal.classList.remove('hidden');
+                this.isPaused = true;
+                const countdownEl = document.getElementById('adCountdown');
+                const btnCloseAd = document.getElementById('btnCloseAd');
+                btnCloseAd.disabled = true;
+                btnCloseAd.className = 'w-full py-2 bg-gray-300 text-gray-500 font-game text-xs rounded-xl cursor-not-allowed transition';
+                btnCloseAd.innerText = 'PLEASE WAIT...';
+
+                let timeLeft = 3;
+                countdownEl.innerText = `${timeLeft}s`;
+
+                const interval = setInterval(() => {
+                    timeLeft--;
+                    countdownEl.innerText = `${timeLeft}s`;
+                    if (timeLeft <= 0) {
+                        clearInterval(interval);
+                        btnCloseAd.disabled = false;
+                        btnCloseAd.className = 'w-full py-2 bg-gradient-to-r from-emerald-400 to-teal-500 text-white font-game text-xs rounded-xl hover:brightness-110 shadow-md transition cursor-pointer';
+                        btnCloseAd.innerText = 'CLAIM REWARD! 🎉';
+                    }
+                }, 1000);
+
+                btnCloseAd.onclick = () => {
+                    clearInterval(interval);
+                    this.adModal.classList.add('hidden');
+                    this.isPaused = false;
+                    if (rewardType === 'gems') {
+                        this.gems += 50;
+                        this.updateGemDisplay();
+                        this.showJudgmentText('CLAIMED +50 GEMS! 💎');
+                    } else if (rewardType === 'revive_full_heal') {
+                        this.executeRevive(this.maxPlayerHp);
+                    } else if (rewardType === 'skin') {
+                        if (CHARACTERS[targetKey]) {
+                            CHARACTERS[targetKey].unlocked = true;
+                            this.saveSkinsData();
+                            this.buildShopSelectors();
+                            this.buildSkinSelectors();
+                            this.showJudgmentText(`UNLOCKED ${CHARACTERS[targetKey].name}! 🎉`);
+                        }
+                    } else if (rewardType === 'hat') {
+                        if (HATS[targetKey]) {
+                            HATS[targetKey].unlocked = true;
+                            this.saveHatsData();
+                            this.buildShopSelectors();
+                            this.buildSkinSelectors();
+                            this.showJudgmentText(`UNLOCKED ${HATS[targetKey].name}! 👑`);
+                        }
+                    } else if (rewardType === 'trail') {
+                        if (TRAILS[targetKey]) {
+                            TRAILS[targetKey].unlocked = true;
+                            this.saveTrailsData();
+                            this.buildShopSelectors();
+                            this.buildSkinSelectors();
+                            this.showJudgmentText(`UNLOCKED ${TRAILS[targetKey].name}! ✨`);
+                        }
+                    }
+                };
+            }
+
+            switchTab(tabName, targetEl) {
+                ['Tracks', 'Skins', 'Shop', 'Themes', 'Scores', 'Trophies', 'Missions', 'Modes'].forEach(name => {
+                    document.getElementById(`tab${name}`).className = 'py-2 font-bold rounded-lg transition text-gray-600';
+                    document.getElementById(`content${name}`).classList.add('hidden');
+                });
+                targetEl.className = 'py-2 font-bold rounded-lg transition bg-white text-purple-800 shadow-sm';
+                document.getElementById(`content${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.remove('hidden');
+            }
+
+            startGame() {
+                this.isRunning = true;
+                this.isPaused = false;
+                this.score = 0;
+                this.scoreP2 = 0;
+                this.combo = 0;
+                this.maxComboReached = 0;
+                this.perfectCount = 0;
+                this.totalHitsAttempted = 0;
+                this.totalHitsSuccessful = 0;
+                this.speed = 0.27; 
+                this.progress = 0;
+                this.direction = 1;
+                this.progressP2 = 0.05;
+                this.directionP2 = 1;
+                this.currentLevel = 1;
+                this.reviveUsedThisGame = false;
+                document.getElementById('adReviveBadge').innerText = '1/1';
+                this.updateLevelDisplay();
+                this.playerHp = this.maxPlayerHp;
+                this.hasShield = false;
+                this.hasGhost = false;
+                this.feverActive = false;
+                this.isBossFight = false;
+                this.bossSkillTimer = 0;
+                this.skillCooldown = 0;
+                this.targetHitTimeLeft = this.targetHitMaxTime;
+                this.updateHUD();
+                this.updateHpBar();
+                this.summaryModal.classList.add('hidden');
+                this.reviveModal.classList.add('hidden');
+                this.startPrompt.classList.add('opacity-0', 'pointer-events-none');
+                
+                this.spawnNewTargetsRandomly(1);
+                
+                this.achievements.firstRun = true;
+                this.saveAchievements();
+            }
+
+            triggerBossBattle() {
+                this.isBossFight = true;
+                this.currentBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
+                this.bossHp = this.currentBoss.maxHp;
+                this.bossMaxHp = this.currentBoss.maxHp;
+                this.bossSkillTimer = 0;
+                
+                audio.playBossAlarm();
+                this.bossAvatarGroup.classList.remove('hidden');
+                this.bossAvatarEmoji.innerText = this.currentBoss.emoji;
+                this.bossNameLabel.innerHTML = `<i class="fa-solid fa-skull"></i> BOSS (Lv. ${this.currentLevel}): ${this.currentBoss.name}`;
+                this.bossHpContainer.classList.remove('hidden');
+                this.updateBossHpBar();
+                this.showJudgmentText(`⚠️ LEVEL ${this.currentLevel} BOSS INCOMING! ⚠️`);
+                this.spawnNewTargetsRandomly(1);
+            }
+
+            updateBossHpBar() {
+                let pct = Math.max(0, (this.bossHp / this.bossMaxHp) * 100);
+                this.bossHpBar.style.width = `${pct}%`;
+                this.bossHpText.innerText = `HP: ${this.bossHp}/${this.bossMaxHp}`;
+            }
+
+            updateHpBar() {
+                let heartsHtml = '';
+                for (let i = 1; i <= this.maxPlayerHp; i++) {
+                    if (i <= this.playerHp) {
+                        heartsHtml += `<i class="fa-solid fa-heart text-red-500 drop-shadow"></i>`;
+                    } else {
+                        heartsHtml += `<i class="fa-solid fa-heart text-gray-300"></i>`;
+                    }
+                }
+                this.heartContainer.innerHTML = heartsHtml;
+                this.shieldBadge.classList.toggle('hidden', !this.hasShield);
+                this.ghostBadge.classList.toggle('hidden', !this.hasGhost);
+            }
+
+            damagePlayer(amount = 1) {
+                if (this.hasGhost) {
+                    this.showJudgmentText('GHOST MODE EVADED DAMAGE! 👻');
+                    return;
+                }
+                if (this.hasShield) {
+                    this.hasShield = false;
+                    this.updateHpBar();
+                    this.showJudgmentText('SHIELD BLOCKED DAMAGE! 🛡️');
+                    return;
+                }
+                this.playerHp = Math.max(0, this.playerHp - amount);
+                this.updateHpBar();
+                this.showJudgmentText(`MISS! -${amount} HP 💔`);
+                if (this.playerHp <= 0) this.gameOver();
+            }
+
+            gameOver() {
+                this.isRunning = false;
+                this.isPaused = true;
+                audio.playHit('MISS');
+                this.showJudgmentText('GAME OVER! 💀');
+                this.checkMissionsOnGameOver();
+                this.saveHighScore();
+                
+                this.reviveModal.classList.remove('hidden');
+                if (this.reviveUsedThisGame) {
+                    document.getElementById('btnReviveAd').classList.add('opacity-50', 'cursor-not-allowed');
+                    document.getElementById('adReviveBadge').innerText = '0/1';
+                } else {
+                    document.getElementById('btnReviveAd').classList.remove('opacity-50', 'cursor-not-allowed');
+                    document.getElementById('adReviveBadge').innerText = '1/1';
+                }
+            }
+
+            saveHighScore() {
+                let earnedGems = Math.floor(this.score / 25);
+                this.gems += earnedGems;
+                this.updateGemDisplay();
+
+                this.highScores.push({
+                    score: this.score,
+                    combo: this.maxComboReached,
+                    skin: this.currentSkinKey,
+                    date: new Date().toLocaleDateString()
+                });
+                this.highScores.sort((a, b) => b.score - a.score);
+                this.highScores = this.highScores.slice(0, 5);
+                localStorage.setItem('trackrunner_highscores', JSON.stringify(this.highScores));
+                this.buildHighScoresList();
+            }
+
+            showSummaryScreen() {
+                document.getElementById('sumScore').innerText = this.score;
+                let earnedGems = Math.floor(this.score / 25);
+                document.getElementById('sumGems').innerText = `+${earnedGems} 💎`;
+                document.getElementById('sumCombo').innerText = `x${this.maxComboReached}`;
+                let accuracy = this.totalHitsAttempted > 0 ? Math.round((this.totalHitsSuccessful / this.totalHitsAttempted) * 100) : 0;
+                document.getElementById('sumAccuracy').innerText = `${accuracy}%`;
+                this.summaryModal.classList.remove('hidden');
+            }
+
+            checkTiming(playerNum = 1) {
+                let currentProg = playerNum === 1 ? this.progress : this.progressP2;
+                let activeTargets = playerNum === 1 ? this.activeTargetsP1 : this.activeTargetsP2;
+                
+                if (playerNum === 1 && this.activeHazards.length > 0) {
+                    let h = this.activeHazards[0];
+                    let hDist = Math.abs(currentProg - h.progress);
+                    if (hDist < 0.05 || hDist > 0.95) {
+                        this.damagePlayer(1);
+                        this.activeHazards = [];
+                        return;
+                    }
+                }
+
+                if (playerNum === 1 && this.activePowerUps.length > 0) {
+                    let p = this.activePowerUps[0];
+                    let pDist = Math.abs(currentProg - p.progress);
+                    if (pDist < 0.1 || pDist > 0.9) {
+                        audio.playPowerUp();
+                        let bonusMultiplier = 1 + (this.powerUpLevel - 1) * 0.5;
+                        if (p.type === 'speed') {
+                            this.showJudgmentText('SPEED BOOST! ⚡');
+                            this.speed = 0.32; 
+                        } else if (p.type === 'shield') {
+                            this.hasShield = true;
+                            this.updateHpBar();
+                            this.showJudgmentText('SHIELD ACTIVATED! 🛡️');
+                        } else if (p.type === 'freeze') {
+                            this.targetHitTimeLeft = Math.min(this.targetHitMaxTime, this.targetHitTimeLeft + (3.0 * bonusMultiplier));
+                            this.activeTargetsP1.forEach(t => { t.savedVelocity = t.velocity; t.velocity = 0; });
+                            setTimeout(() => {
+                                this.activeTargetsP1.forEach(t => { if (t.savedVelocity !== undefined) t.velocity = t.savedVelocity; });
+                            }, 3000);
+                            this.showJudgmentText('TIME FREEZE! ❄️');
+                        } else if (p.type === 'magnet') {
+                            this.score += 250;
+                            this.gems += 5;
+                            this.updateGemDisplay();
+                            this.showJudgmentText('COIN MAGNET! +250 PTS 🧲');
+                        } else if (p.type === 'heart') {
+                            this.playerHp = Math.min(this.maxPlayerHp, this.playerHp + 1);
+                            this.updateHpBar();
+                            this.showJudgmentText('EXTRA LIFE! +1 HP ❤️');
+                        } else if (p.type === 'ghost') {
+                            this.hasGhost = true;
+                            this.updateHpBar();
+                            this.showJudgmentText('GHOST INVINCIBILITY! 👻');
+                            setTimeout(() => {
+                                this.hasGhost = false;
+                                this.updateHpBar();
+                            }, 5000);
+                        }
+                        this.activePowerUps = [];
+                        this.redrawPowerUpsSVG();
+                        return;
+                    }
+                }
+
+                let bestDist = 999;
+                let matchedTargetIndex = -1;
+
+                if (playerNum === 1) this.totalHitsAttempted++;
+
+                activeTargets.forEach((t, index) => {
+                    let dist = Math.abs(currentProg - t.progress);
+                    if (dist > 0.5) dist = 1.0 - dist;
+                    if (dist < bestDist) { bestDist = dist; matchedTargetIndex = index; }
+                });
+
+                let judgment = 'MISS';
+                let points = 0;
+                let successfulHit = false;
+
+                if (bestDist < 0.03) {
+                    judgment = 'PERFECT!!'; points = 100;
+                    if (playerNum === 1) {
+                        this.combo++;
+                        this.perfectCount++;
+                        this.spawnParticles();
+                    }
+                    successfulHit = true;
+                } else if (bestDist < 0.07) {
+                    judgment = 'GREAT!'; points = 60;
+                    if (playerNum === 1) this.combo++;
+                    successfulHit = true;
+                } else if (bestDist < 0.12) {
+                    judgment = 'GOOD'; points = 30;
+                    if (playerNum === 1) this.combo++;
+                    successfulHit = true;
+                } else {
+                    judgment = 'MISS!'; points = 0;
+                    if (playerNum === 1) { this.combo = 0; this.damagePlayer(1); }
+                    successfulHit = false;
+                }
+
+                if (playerNum === 1) {
+                    if (this.combo > this.maxComboReached) {
+                        this.maxComboReached = this.combo;
+                        if (this.maxComboReached >= 50) {
+                            this.achievements.combo50 = true;
+                            this.saveAchievements();
+                        }
+                    }
+                    if (successfulHit) this.totalHitsSuccessful++;
+
+                    let multiplier = Math.min(5, 1 + Math.floor(this.combo / 5));
+                    if (this.feverActive) multiplier *= 2;
+                    let earnedPts = points * multiplier;
+                    this.score += earnedPts;
+                    
+                    audio.playHit(judgment.replace('!!', '').replace('!', ''), this.combo);
+                    if (!this.isBossFight && judgment !== 'MISS!') {
+                        this.showJudgmentText(judgment);
+                        if (matchedTargetIndex !== -1) {
+                            let t = activeTargets[matchedTargetIndex];
+                            this.showFloatingPopup(`+${earnedPts}`, t.cx, t.cy);
+                        }
+                    }
+
+                    if (this.combo >= 20 && !this.feverActive) {
+                        this.feverActive = true;
+                        this.feverTimer = 10.0;
+                        this.showJudgmentText('🌈 RAINBOW FEVER MODE! 🌈');
+                        document.getElementById('svgTrackContainer').classList.add('fever-mode-active');
+                    }
+                } else {
+                    this.scoreP2 += points;
+                }
+
+                if (this.isBossFight && successfulHit && playerNum === 1) {
+                    let damage = judgment.includes('PERFECT') ? 2 : 1;
+                    this.bossHp -= damage;
+                    this.updateBossHpBar();
+                    if (matchedTargetIndex !== -1) {
+                        let t = activeTargets[matchedTargetIndex];
+                        this.showFloatingPopup(`-${damage} HP`, t.cx, t.cy);
+                    }
+                    this.showJudgmentText(`HIT BOSS -${damage} HP! 🔥`);
+                    if (this.bossHp <= 0) {
+                        this.checkBossVictory();
+                    }
+                }
+
+                if (successfulHit) {
+                    if (matchedTargetIndex !== -1) activeTargets.splice(matchedTargetIndex, 1);
+                    if (playerNum === 1 && !this.isBossFight) {
+                        this.hitsOnCurrentSymbol++;
+                        if (this.hitsOnCurrentSymbol >= this.targetHitsNeeded) {
+                            audio.playSymbolComplete();
+                            this.currentLevel++;
+                            this.updateLevelDisplay();
+                            this.showJudgmentText(`LEVEL ${this.currentLevel}! ✨`);
+
+                            if (this.currentLevel % 7 === 0) {
+                                setTimeout(() => this.triggerBossBattle(), 500);
+                            } else {
+                                setTimeout(() => {
+                                    const allKeys = Object.keys(TRACK_PATHS);
+                                    let nextKey = allKeys[Math.floor(Math.random() * allKeys.length)];
+                                    this.renderTrack(nextKey);
+                                }, 600);
+                            }
+                        } else {
+                            if (activeTargets.length === 0) this.spawnNewTargetsRandomly(1);
+                            else this.redrawTargetsSVG(1);
+                        }
+                    } else {
+                        if (activeTargets.length === 0) this.spawnNewTargetsRandomly(playerNum);
+                        else this.redrawTargetsSVG(playerNum);
+                    }
+                }
+                this.updateHUD();
+                this.updateTargetDisplay();
+            }
+
+            showJudgmentText(text) {
+                const textEl = document.createElement('div');
+                textEl.className = 'font-game text-2xl md:text-3xl absolute transition-all duration-500 transform -translate-y-4 opacity-100 pointer-events-none text-center px-4 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] z-30';
+                if (text.includes('PERFECT')) textEl.classList.add('text-pink-400');
+                else if (text.includes('GREAT')) textEl.classList.add('text-cyan-400');
+                else if (text.includes('GOOD')) textEl.classList.add('text-yellow-300');
+                else if (text.includes('MISS')) textEl.classList.add('text-red-500');
+                else textEl.classList.add('text-yellow-400', 'scale-110');
+                textEl.innerText = text;
+                this.judgmentOverlay.appendChild(textEl);
+                setTimeout(() => textEl.classList.add('-translate-y-16', 'opacity-0'), 50);
+                setTimeout(() => textEl.remove(), 550);
+            }
+
+            showFloatingPopup(txt, x, y) {
+                const pop = document.createElement('div');
+                pop.className = 'absolute font-game text-sm text-yellow-300 floating-score pointer-events-none z-30 drop-shadow-[0_0_8px_#000]';
+                pop.style.left = `${x}px`;
+                pop.style.top = `${y}px`;
+                pop.innerText = txt;
+                this.judgmentOverlay.appendChild(pop);
+                setTimeout(() => pop.remove(), 700);
+            }
+
+            spawnParticles() {
+                if (this.activeTargetsP1.length === 0) return;
+                const targetPoint = { x: this.activeTargetsP1[0].cx, y: this.activeTargetsP1[0].cy };
+                const trailColor = TRAILS[this.currentTrailKey]?.color || '#FF007F';
+                for (let i = 0; i < 14; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'absolute w-3 h-3 rounded-full pointer-events-none shadow-[0_0_10px_#fff]';
+                    particle.style.backgroundColor = trailColor;
+                    particle.style.left = `${targetPoint.x}px`;
+                    particle.style.top = `${targetPoint.y}px`;
+                    this.judgmentOverlay.appendChild(particle);
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 35 + Math.random() * 55;
+                    particle.animate([
+                        { transform: 'translate(0, 0) scale(1.2)', opacity: 1 },
+                        { transform: `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`, opacity: 0 }
+                    ], { duration: 650, easing: 'cubic-bezier(0,0,0.2,1)' }).onfinish = () => particle.remove();
+                }
+            }
+
+            updateHUD() {
+                let dispScore = this.gameMode === 'single' ? this.score : `${this.score} (P1) | ${this.scoreP2} (${this.gameMode === 'com' ? 'COM' : 'P2'})`;
+                this.scoreDisplay.innerText = dispScore;
+                this.comboDisplay.innerText = `x${this.combo}`;
+                this.comboDisplayFooter.innerText = `x${this.combo}`;
+            }
+
+            updateTargetDisplay() {
+                this.targetCountDisplay.innerText = `${this.hitsOnCurrentSymbol}/${this.targetHitsNeeded}`;
+            }
+
+            buildTrackSelectors() {
+                const shapeGrid = document.getElementById('shapeGrid');
+                const holidayGrid = document.getElementById('holidayGrid');
+                const transportGrid = document.getElementById('transportGrid');
+                const letterGrid = document.getElementById('letterGrid');
+                const numberGrid = document.getElementById('numberGrid');
+                
+                shapeGrid.innerHTML = ''; 
+                holidayGrid.innerHTML = '';
+                transportGrid.innerHTML = '';
+                letterGrid.innerHTML = ''; 
+                numberGrid.innerHTML = '';
+
+                const shapes = ['Circle', 'Heart', 'Infinity', 'Star', 'Square', 'Triangle', 'Diamond', 'Hexagon'];
+                const holidays = ['Christmas Tree', 'Halloween Pumpkin'];
+                const transports = ['Car', 'Rocket Ship', 'Airplane', 'Train'];
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                const numbers = Array.from({length: 20}, (_, i) => String(i + 1));
+
+                shapes.forEach(name => {
+                    const card = document.createElement('button');
+                    card.className = `p-2.5 rounded-2xl glass-card flex flex-col items-center justify-center border-2 ${this.currentTrackKey === name ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<span class="font-game text-xs text-purple-900">${name}</span>`;
+                    card.onclick = () => { this.renderTrack(name); document.getElementById('menuModal').classList.add('hidden'); this.isPaused = false; };
+                    shapeGrid.appendChild(card);
+                });
+
+                holidays.forEach(name => {
+                    const card = document.createElement('button');
+                    card.className = `p-2.5 rounded-2xl glass-card flex items-center justify-center border-2 ${this.currentTrackKey === name ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<span class="font-game text-xs text-purple-900">${name}</span>`;
+                    card.onclick = () => { this.renderTrack(name); document.getElementById('menuModal').classList.add('hidden'); this.isPaused = false; };
+                    holidayGrid.appendChild(card);
+                });
+
+                transports.forEach(name => {
+                    const card = document.createElement('button');
+                    card.className = `p-2.5 rounded-2xl glass-card flex items-center justify-center border-2 ${this.currentTrackKey === name ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<span class="font-game text-xs text-purple-900">${name}</span>`;
+                    card.onclick = () => { this.renderTrack(name); document.getElementById('menuModal').classList.add('hidden'); this.isPaused = false; };
+                    transportGrid.appendChild(card);
+                });
+
+                letters.forEach(lettr => {
+                    const card = document.createElement('button');
+                    card.className = `p-2 rounded-xl glass-card flex items-center justify-center border-2 ${this.currentTrackKey === lettr ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<span class="font-game text-base text-purple-900">${lettr}</span>`;
+                    card.onclick = () => { this.renderTrack(lettr); document.getElementById('menuModal').classList.add('hidden'); this.isPaused = false; };
+                    letterGrid.appendChild(card);
+                });
+                numbers.forEach(num => {
+                    const card = document.createElement('button');
+                    card.className = `p-2 rounded-xl glass-card flex items-center justify-center border-2 ${this.currentTrackKey === num ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<span class="font-game text-base text-purple-900">${num}</span>`;
+                    card.onclick = () => { this.renderTrack(num); document.getElementById('menuModal').classList.add('hidden'); this.isPaused = false; };
+                    numberGrid.appendChild(card);
+                });
+            }
+
+            buildSkinSelectors() {
+                const skinGrid = document.getElementById('skinGrid');
+                const hatGrid = document.getElementById('hatGrid');
+                const trailGrid = document.getElementById('trailGrid');
+                skinGrid.innerHTML = ''; hatGrid.innerHTML = ''; trailGrid.innerHTML = '';
+
+                Object.keys(CHARACTERS).forEach(key => {
+                    const char = CHARACTERS[key];
+                    if (!char.unlocked) return;
+                    const card = document.createElement('button');
+                    card.className = `p-3 rounded-2xl glass-card flex items-center gap-3 border-2 ${this.currentSkinKey === key ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<div class="w-10 h-10"><svg viewBox="-30 -35 60 60" class="w-full h-full">${char.svg}</svg></div><span class="font-bold text-sm text-purple-900">${char.name}</span>`;
+                    card.onclick = () => { this.currentSkinKey = key; this.renderCharacters(); this.buildSkinSelectors(); document.getElementById('menuModal').classList.add('hidden'); this.isPaused = false; };
+                    skinGrid.appendChild(card);
+                });
+
+                Object.keys(HATS).forEach(key => {
+                    const hat = HATS[key];
+                    if (!hat.unlocked) return;
+                    const card = document.createElement('button');
+                    card.className = `p-2.5 rounded-xl glass-card flex flex-col items-center justify-center border-2 ${this.currentHatKey === key ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<div class="w-8 h-8 flex items-center justify-center"><svg viewBox="0 0 50 30" class="w-full h-full">${hat.svg}</svg></div><span class="font-game text-[10px] text-purple-900 mt-1">${hat.name}</span>`;
+                    card.onclick = () => { this.currentHatKey = key; this.renderCharacters(); this.buildSkinSelectors(); document.getElementById('menuModal').classList.add('hidden'); this.isPaused = false; };
+                    hatGrid.appendChild(card);
+                });
+
+                Object.keys(TRAILS).forEach(key => {
+                    const trail = TRAILS[key];
+                    if (!trail.unlocked) return;
+                    const card = document.createElement('button');
+                    card.className = `p-2 rounded-xl glass-card flex flex-col items-center justify-center border-2 ${this.currentTrailKey === key ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<div class="w-4 h-4 rounded-full mb-1" style="background:${trail.color}"></div><span class="font-game text-xs text-purple-900">${trail.name}</span>`;
+                    card.onclick = () => { this.currentTrailKey = key; this.buildSkinSelectors(); document.getElementById('menuModal').classList.add('hidden'); this.isPaused = false; };
+                    trailGrid.appendChild(card);
+                });
+            }
+
+            buildShopSelectors() {
+                const shopGrid = document.getElementById('shopGrid');
+                shopGrid.innerHTML = '';
+
+                const adGemCard = document.createElement('div');
+                adGemCard.className = `p-3 rounded-2xl glass-card flex items-center justify-between border-2 border-indigo-400 bg-indigo-50/50`;
+                adGemCard.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center text-lg"><i class="fa-solid fa-tv"></i></div>
+                        <div><div class="font-bold text-sm text-purple-900">Watch Ad for Free Gems</div><div class="text-xs text-gray-600">Reward: +50 💎</div></div>
+                    </div>
+                    <button class="px-4 py-1.5 rounded-xl font-game text-xs text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:brightness-110 shadow-md">
+                        WATCH AD
+                    </button>
+                `;
+                adGemCard.querySelector('button').onclick = () => this.watchRewardAd('gems');
+                shopGrid.appendChild(adGemCard);
+
+                let powCost = this.powerUpLevel * 75;
+                const powCard = document.createElement('div');
+                powCard.className = `p-3 rounded-2xl glass-card flex items-center justify-between border-2 border-amber-400 bg-amber-50/40`;
+                powCard.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-amber-400 text-white flex items-center justify-center text-lg"><i class="fa-solid fa-bolt"></i></div>
+                        <div><div class="font-bold text-sm text-purple-900">Power-Up Booster (Lv. ${this.powerUpLevel})</div><div class="text-xs text-gray-600">Cost: ${powCost} 💎</div></div>
+                    </div>
+                    <button class="px-4 py-1.5 rounded-xl font-game text-xs text-white bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 shadow-md">
+                        UPGRADE
+                    </button>
+                `;
+                powCard.querySelector('button').onclick = () => {
+                    if (this.gems >= powCost) {
+                        this.gems -= powCost;
+                        this.powerUpLevel++;
+                        localStorage.setItem('trackrunner_pow_lvl', this.powerUpLevel);
+                        this.updateGemDisplay();
+                        this.buildShopSelectors();
+                    } else {
+                        alert('Not enough gems!');
+                    }
+                };
+                shopGrid.appendChild(powCard);
+
+                Object.keys(CHARACTERS).forEach(key => {
+                    const char = CHARACTERS[key];
+                    const card = document.createElement('div');
+                    card.className = `p-3 rounded-2xl glass-card flex items-center justify-between border-2 ${char.unlocked ? 'border-emerald-400 bg-emerald-50/40' : 'border-purple-300'}`;
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10"><svg viewBox="-30 -35 60 60" class="w-full h-full">${char.svg}</svg></div>
+                            <div><div class="font-bold text-sm text-purple-900">${char.name} (Skin)</div><div class="text-xs text-gray-600">${char.unlocked ? 'Unlocked' : `Cost: ${char.cost} 💎`}</div></div>
+                        </div>
+                        <div class="flex gap-2">
+                            ${!char.unlocked ? `<button class="watch-ad-btn px-2.5 py-1.5 rounded-xl font-game text-[10px] text-white bg-indigo-500 hover:brightness-110 shadow-md"><i class="fa-solid fa-tv mr-1"></i> Ad</button>` : ''}
+                            <button class="buy-btn px-4 py-1.5 rounded-xl font-game text-xs text-white ${char.unlocked ? 'bg-emerald-500' : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 shadow-md'}">
+                                ${char.unlocked ? 'OWNED' : 'BUY'}
+                            </button>
+                        </div>
+                    `;
+                    if (!char.unlocked) {
+                        card.querySelector('.watch-ad-btn').onclick = () => this.watchRewardAd('skin', key);
+                        card.querySelector('.buy-btn').onclick = () => {
+                            if (this.gems >= char.cost) {
+                                this.gems -= char.cost;
+                                char.unlocked = true;
+                                this.updateGemDisplay();
+                                this.saveSkinsData();
+                                this.buildShopSelectors();
+                                this.buildSkinSelectors();
+                            } else {
+                                alert('Not enough gems!');
+                            }
+                        };
+                    }
+                    shopGrid.appendChild(card);
+                });
+
+                Object.keys(HATS).forEach(key => {
+                    const hat = HATS[key];
+                    if (key === 'none') return;
+                    const card = document.createElement('div');
+                    card.className = `p-3 rounded-2xl glass-card flex items-center justify-between border-2 ${hat.unlocked ? 'border-emerald-400 bg-emerald-50/40' : 'border-pink-300'}`;
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 flex items-center justify-center"><svg viewBox="0 0 50 30" class="w-8 h-8">${hat.svg}</svg></div>
+                            <div><div class="font-bold text-sm text-purple-900">${hat.name} (Hat)</div><div class="text-xs text-gray-600">${hat.unlocked ? 'Unlocked' : `Cost: ${hat.cost} 💎`}</div></div>
+                        </div>
+                        <div class="flex gap-2">
+                            ${!hat.unlocked ? `<button class="watch-ad-btn px-2.5 py-1.5 rounded-xl font-game text-[10px] text-white bg-indigo-500 hover:brightness-110 shadow-md"><i class="fa-solid fa-tv mr-1"></i> Ad</button>` : ''}
+                            <button class="buy-btn px-4 py-1.5 rounded-xl font-game text-xs text-white ${hat.unlocked ? 'bg-emerald-500' : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 shadow-md'}">
+                                ${hat.unlocked ? 'OWNED' : 'BUY'}
+                            </button>
+                        </div>
+                    `;
+                    if (!hat.unlocked) {
+                        card.querySelector('.watch-ad-btn').onclick = () => this.watchRewardAd('hat', key);
+                        card.querySelector('.buy-btn').onclick = () => {
+                            if (this.gems >= hat.cost) {
+                                this.gems -= hat.cost;
+                                hat.unlocked = true;
+                                this.updateGemDisplay();
+                                this.saveHatsData();
+                                this.buildShopSelectors();
+                                this.buildSkinSelectors();
+                            } else {
+                                alert('Not enough gems!');
+                            }
+                        };
+                    }
+                    shopGrid.appendChild(card);
+                });
+
+                Object.keys(TRAILS).forEach(key => {
+                    const trail = TRAILS[key];
+                    if (key === 'rainbow') return;
+                    const card = document.createElement('div');
+                    card.className = `p-3 rounded-2xl glass-card flex items-center justify-between border-2 ${trail.unlocked ? 'border-emerald-400 bg-emerald-50/40' : 'border-cyan-300'}`;
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full" style="background:${trail.color}"></div>
+                            <div><div class="font-bold text-sm text-purple-900">${trail.name} (Trail)</div><div class="text-xs text-gray-600">${trail.unlocked ? 'Unlocked' : `Cost: ${trail.cost} 💎`}</div></div>
+                        </div>
+                        <div class="flex gap-2">
+                            ${!trail.unlocked ? `<button class="watch-ad-btn px-2.5 py-1.5 rounded-xl font-game text-[10px] text-white bg-indigo-500 hover:brightness-110 shadow-md"><i class="fa-solid fa-tv mr-1"></i> Ad</button>` : ''}
+                            <button class="buy-btn px-4 py-1.5 rounded-xl font-game text-xs text-white ${trail.unlocked ? 'bg-emerald-500' : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 shadow-md'}">
+                                ${trail.unlocked ? 'OWNED' : 'BUY'}
+                            </button>
+                        </div>
+                    `;
+                    if (!trail.unlocked) {
+                        card.querySelector('.watch-ad-btn').onclick = () => this.watchRewardAd('trail', key);
+                        card.querySelector('.buy-btn').onclick = () => {
+                            if (this.gems >= trail.cost) {
+                                this.gems -= trail.cost;
+                                trail.unlocked = true;
+                                this.updateGemDisplay();
+                                this.saveTrailsData();
+                                this.buildShopSelectors();
+                                this.buildSkinSelectors();
+                            } else {
+                                alert('Not enough gems!');
+                            }
+                        };
+                    }
+                    shopGrid.appendChild(card);
+                });
+            }
+
+            saveSkinsData() {
+                let skinMap = {};
+                Object.keys(CHARACTERS).forEach(k => { skinMap[k] = CHARACTERS[k].unlocked; });
+                localStorage.setItem('trackrunner_skins', JSON.stringify(skinMap));
+            }
+
+            saveHatsData() {
+                let hatMap = {};
+                Object.keys(HATS).forEach(k => { hatMap[k] = HATS[k].unlocked; });
+                localStorage.setItem('trackrunner_hats', JSON.stringify(hatMap));
+            }
+
+            saveTrailsData() {
+                let trailMap = {};
+                Object.keys(TRAILS).forEach(k => { trailMap[k] = TRAILS[k].unlocked; });
+                localStorage.setItem('trackrunner_trails', JSON.stringify(trailMap));
+            }
+
+            buildThemeSelectors() {
+                const themeGrid = document.getElementById('themeGrid');
+                themeGrid.innerHTML = '';
+                Object.keys(THEMES).forEach(key => {
+                    const theme = THEMES[key];
+                    const card = document.createElement('button');
+                    card.className = `w-full p-3 rounded-2xl glass-card flex items-center justify-between border-2 ${this.currentThemeKey === key ? 'border-pink-500 bg-white/80' : 'border-transparent'}`;
+                    card.innerHTML = `<span class="font-bold text-sm text-purple-900">${theme.name}</span><div class="w-6 h-6 rounded-full ${theme.class}"></div>`;
+                    card.onclick = () => {
+                        this.currentThemeKey = key;
+                        document.getElementById('bodyTheme').className = `${theme.class} min-h-screen h-screen overflow-hidden flex flex-col justify-between select-none text-white transition-colors duration-500`;
+                        this.buildThemeSelectors();
+                        document.getElementById('menuModal').classList.add('hidden');
+                        this.isPaused = false;
+                    };
+                    themeGrid.appendChild(card);
+                });
+            }
+
+            buildHighScoresList() {
+                const scoresGrid = document.getElementById('scoresGrid');
+                scoresGrid.innerHTML = '';
+                
+                const globalHeader = document.createElement('div');
+                globalHeader.className = 'text-[10px] font-bold uppercase text-indigo-700 tracking-wider pt-1 pb-0.5';
+                globalHeader.innerText = '🌐 Global Leaderboard (Online)';
+                scoresGrid.appendChild(globalHeader);
+
+                if (this.globalScores.length === 0) {
+                    scoresGrid.innerHTML += `<div class="text-xs text-gray-500 text-center py-2">Loading global rankings...</div>`;
+                } else {
+                    this.globalScores.forEach((item, index) => {
+                        const card = document.createElement('div');
+                        card.className = `p-2.5 rounded-2xl glass-card flex items-center justify-between border-2 border-indigo-200`;
+                        card.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full bg-indigo-500 text-white font-game text-[10px] flex items-center justify-center">${index + 1}</div>
+                                <div><div class="font-bold text-xs text-purple-900">${item.name}</div><div class="text-[10px] text-gray-600">Score: ${item.score}</div></div>
+                            </div>
+                            <div class="w-7 h-7"><svg viewBox="-30 -35 60 60" class="w-full h-full">${CHARACTERS[item.skin].svg}</svg></div>
+                        `;
+                        scoresGrid.appendChild(card);
+                    });
+                }
+
+                const localHeader = document.createElement('div');
+                localHeader.className = 'text-[10px] font-bold uppercase text-pink-600 tracking-wider pt-3 pb-0.5';
+                localHeader.innerText = '🏆 My Local Best Scores';
+                scoresGrid.appendChild(localHeader);
+
+                if (this.highScores.length === 0) {
+                    scoresGrid.innerHTML += `<div class="text-xs text-gray-500 text-center py-2">No local high scores recorded yet!</div>`;
+                    return;
+                }
+                this.highScores.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = `p-2.5 rounded-2xl glass-card flex items-center justify-between border-2 border-pink-200`;
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-pink-500 text-white font-game text-[10px] flex items-center justify-center">${index + 1}</div>
+                            <div><div class="font-bold text-xs text-purple-900">Score: ${item.score}</div><div class="text-[10px] text-gray-600">Max Combo: x${item.combo} • ${item.date}</div></div>
+                        </div>
+                        <div class="w-7 h-7"><svg viewBox="-30 -35 60 60" class="w-full h-full">${CHARACTERS[item.skin]?.svg || CHARACTERS['cat'].svg}</svg></div>
+                    `;
+                    scoresGrid.appendChild(card);
+                });
+            }
+
+            buildTrophyList() {
+                const trophyGrid = document.getElementById('trophyGrid');
+                trophyGrid.innerHTML = '';
+                const list = [
+                    { key: 'firstRun', title: 'First Steps', desc: 'Complete your first track run' },
+                    { key: 'combo50', title: 'Combo Master', desc: 'Reach a combo of x50' },
+                    { key: 'bossSlayer', title: 'Dragon Slayer', desc: 'Defeat a Boss' }
+                ];
+                list.forEach(item => {
+                    const unlocked = this.achievements[item.key];
+                    const card = document.createElement('div');
+                    card.className = `p-3 rounded-2xl glass-card flex items-center gap-3 border-2 ${unlocked ? 'border-yellow-400 bg-yellow-50/40' : 'border-gray-300 opacity-60'}`;
+                    card.innerHTML = `<div class="w-10 h-10 rounded-full flex items-center justify-center text-xl ${unlocked ? 'bg-yellow-400 text-white' : 'bg-gray-300 text-gray-500'}"><i class="fa-solid fa-trophy"></i></div><div><div class="font-bold text-sm text-purple-900">${item.title}</div><div class="text-xs text-gray-600">${item.desc}</div></div>`;
+                    trophyGrid.appendChild(card);
+                });
+            }
+
+            saveAchievements() {
+                localStorage.setItem('trackrunner_achievements', JSON.stringify(this.achievements));
+                this.buildTrophyList();
+            }
+
+            checkMissionsOnGameOver() {
+                this.missions.completeRuns.current = Math.min(this.missions.completeRuns.target, this.missions.completeRuns.current + 1);
+                if (this.score > this.missions.score2000.current) {
+                    this.missions.score2000.current = Math.min(this.missions.score2000.target, this.score);
+                }
+                localStorage.setItem('trackrunner_missions', JSON.stringify(this.missions));
+                this.buildMissionsList();
+            }
+
+            buildMissionsList() {
+                const missionGrid = document.getElementById('missionGrid');
+                missionGrid.innerHTML = '';
+                Object.keys(this.missions).forEach(key => {
+                    const m = this.missions[key];
+                    const isDone = m.current >= m.target;
+                    const card = document.createElement('div');
+                    card.className = `p-3 rounded-2xl glass-card flex items-center justify-between border-2 ${isDone ? 'border-emerald-400 bg-emerald-50/40' : 'border-gray-300'}`;
+                    card.innerHTML = `<div><div class="font-bold text-sm text-purple-900">${m.desc}</div><div class="text-[10px] text-gray-600">Progress: ${m.current}/${m.target}</div></div><div class="font-game text-xs px-3 py-1 rounded-full ${isDone ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-500'}">${isDone ? 'COMPLETED' : 'IN PROGRESS'}</div>`;
+                    missionGrid.appendChild(card);
+                });
+            }
+
+            setGameMode(mode) {
+                this.gameMode = mode;
+                let badgeText = 'Single Mode';
+                if (mode === 'com') badgeText = 'Duel vs COM';
+                if (mode === 'friend') badgeText = 'Duel vs Friend';
+                document.getElementById('modeBadge').innerText = badgeText;
+                document.getElementById('modeBtnSingle').className = `w-full p-4 glass-card rounded-2xl flex items-center gap-3 border-2 ${mode === 'single' ? 'border-purple-400' : 'border-transparent'}`;
+                document.getElementById('modeBtnCom').className = `w-full p-4 glass-card rounded-2xl flex items-center gap-3 border-2 ${mode === 'com' ? 'border-purple-400' : 'border-transparent'}`;
+                document.getElementById('modeBtnFriend').className = `w-full p-4 glass-card rounded-2xl flex items-center gap-3 border-2 ${mode === 'friend' ? 'border-purple-400' : 'border-transparent'}`;
+
+                if (mode !== 'single') {
+                    this.btnP2Action.classList.remove('hidden');
+                    this.pipMiniView.classList.remove('hidden');
+                    document.getElementById('pipLabel').innerText = mode === 'com' ? 'COM View' : 'P2 View';
+                } else {
+                    this.btnP2Action.classList.add('hidden');
+                    this.pipMiniView.classList.add('hidden');
+                }
+                this.renderCharacters();
+            }
+
+            gameLoop(timestamp) {
+                if (!this.lastTime) this.lastTime = timestamp;
+                const elapsed = timestamp - this.lastTime;
+                this.lastTime = timestamp;
+
+                // Accumulate time and throttle updates to frameInterval (~45 FPS) to prevent heating & battery drain
+                this.timeAccumulator += elapsed;
+                if (this.timeAccumulator >= this.frameInterval) {
+                    const dt = this.timeAccumulator / 1000;
+                    this.timeAccumulator = 0;
+
+                    if (this.isRunning && !this.isPaused && this.pathLength > 0) {
+                        if (this.skillCooldown > 0) {
+                            this.skillCooldown -= dt;
+                            this.skillCooldownText.innerText = `${this.skillCooldown.toFixed(1)}s`;
+                        } else {
+                            this.skillCooldownText.innerText = `Ready`;
+                        }
+
+                        if (this.feverActive) {
+                            this.feverTimer -= dt;
+                            if (this.feverTimer <= 0) {
+                                this.feverActive = false;
+                                document.getElementById('svgTrackContainer').classList.remove('fever-mode-active');
+                            }
+                        }
+
+                        this.activeTargetsP1.forEach(t => { t.progress = (t.progress + t.velocity * dt + 1.0) % 1.0; });
+                        this.updateTargetPositions(1);
+
+                        if (this.gameMode !== 'single') {
+                            this.activeTargetsP2.forEach(t => { t.progress = (t.progress + t.velocity * dt + 1.0) % 1.0; });
+                            this.updateTargetPositions(2);
+                        }
+
+                        if (!this.isBossFight && this.activeTargetsP1.length > 0) {
+                            this.targetHitTimeLeft -= dt;
+                            if (this.targetHitTimeLeft <= 0) {
+                                this.damagePlayer(1);
+                                this.spawnNewTargetsRandomly(1);
+                            }
+                        }
+                        let timePct = Math.max(0, (this.targetHitTimeLeft / this.targetHitMaxTime) * 100);
+                        this.timerBar.style.width = `${timePct}%`;
+                        this.timerText.innerText = `${this.targetHitTimeLeft.toFixed(1)}s`;
+
+                        let currentRunSpeed = this.speed;
+                        if (this.isBossFight) {
+                            currentRunSpeed *= 1.25;
+                            this.bossSkillTimer += dt;
+                            if (this.bossSkillTimer >= 20.0) {
+                                this.bossSkillTimer = 0;
+                                audio.playBossAlarm();
+                                this.showJudgmentText(`⚡ ${this.currentBoss.name} CASTS ULTIMATE SKILL! ⚡`);
+                                this.damagePlayer(2);
+                            }
+                        }
+
+                        this.progress += currentRunSpeed * this.direction * dt;
+                        if (this.progress >= 1.0) { 
+                            this.progress = 1.0; 
+                            this.direction = -1;
+                        } else if (this.progress <= 0.0) { 
+                            this.progress = 0.0; 
+                            this.direction = 1;
+                        }
+
+                        const currentLen1 = this.progress * this.pathLength;
+                        const point1 = this.svgTrack.getPointAtLength(currentLen1);
+                        const p1A = this.svgTrack.getPointAtLength(Math.max(0, currentLen1 - 2));
+                        const p1B = this.svgTrack.getPointAtLength(Math.min(this.pathLength, currentLen1 + 2));
+                        let angle1 = Math.atan2(p1B.y - p1A.y, p1B.x - p1A.x) * (180 / Math.PI);
+                        if (this.direction === -1) angle1 += 180;
+                        
+                        this.charGroup.setAttribute('transform', `translate(${point1.x}, ${point1.y}) rotate(${angle1})`);
+
+                        if (this.gameMode !== 'single') {
+                            let comSpeed = currentRunSpeed;
+                            if (this.gameMode === 'com') {
+                                comSpeed *= 0.92;
+                                for (let t of this.activeTargetsP2) {
+                                    if (Math.abs(this.progressP2 - t.progress) < 0.015 && Math.random() < 0.25) this.checkTiming(2);
+                                }
+                            }
+                            this.progressP2 += comSpeed * this.directionP2 * dt;
+                            if (this.progressP2 >= 1.0) { this.progressP2 = 1.0; this.directionP2 = -1; }
+                            else if (this.progressP2 <= 0.0) { this.progressP2 = 0.0; this.directionP2 = '1'; }
+
+                            const currentLen2 = this.progressP2 * this.pathLength;
+                            const point2 = this.svgTrack.getPointAtLength(currentLen2);
+                            const p2A = this.svgTrack.getPointAtLength(Math.max(0, currentLen2 - 2));
+                            const p2B = this.svgTrack.getPointAtLength(Math.min(this.pathLength, currentLen2 + 2));
+                            let angle2 = Math.atan2(p2B.y - p2A.y, p2B.x - p2A.x) * (180 / Math.PI);
+                            if (this.directionP2 === -1) angle2 += 180;
+                            document.getElementById('characterGroupPip').innerHTML = `<g transform="translate(${point2.x}, ${point2.y}) rotate(${angle2}) scale(0.85)">${CHARACTERS['bunny'].svg}</g>`;
+                        }
+                    }
+                }
+                requestAnimationFrame((t) => this.gameLoop(t));
+            }
+        }
+
+        window.addEventListener('load', () => { window.game = new CuteTrackGame(); });
+    </script>
+</body>
+</html>
