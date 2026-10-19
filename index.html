@@ -103,15 +103,6 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <div class="glass-panel px-2 py-1 rounded-xl shadow-md flex items-center gap-1">
-                <i class="fa-solid fa-gamepad text-indigo-600 text-xs"></i>
-                <select id="headerModeSelect" class="bg-transparent font-bold text-xs text-purple-900 outline-none cursor-pointer">
-                    <option value="single">Single Mode</option>
-                    <option value="com">Duel vs COM</option>
-                    <option value="friend">Duel vs Friend</option>
-                </select>
-            </div>
-
             <button id="btnSound" class="glass-panel w-9 h-9 rounded-full flex items-center justify-center text-purple-700 hover:text-purple-900 transition tap-active shadow-md">
                 <i class="fa-solid fa-volume-high text-base"></i>
             </button>
@@ -122,16 +113,25 @@
         </div>
     </header>
 
-    <div id="bossHpContainer" class="hidden w-full max-w-sm mx-auto px-4 z-20 transition-all duration-300">
-        <div class="glass-panel px-2.5 py-1 rounded-xl shadow-lg flex flex-col gap-0.5 text-purple-900">
+    <div id="bossHpContainer" class="hidden w-full max-w-md mx-auto px-4 z-20 transition-all duration-300">
+        <div class="glass-panel px-3 py-2 rounded-xl shadow-lg flex flex-col gap-1 text-purple-900">
             <div class="flex justify-between items-center px-0.5">
                 <span id="bossNameLabel" class="font-game text-xs text-red-600 flex items-center gap-1">
                     <i class="fa-solid fa-skull"></i> BOSS: NEON SHADOW DRAGON
                 </span>
-                <span id="bossHpText" class="font-game text-[10px]">HP: 10/10</span>
+                <div class="flex items-center gap-2">
+                    <span id="bossAttackCountdown" class="font-game text-[11px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full animate-pulse border border-red-300">
+                        <i class="fa-solid fa-clock"></i> Attack in: 12.0s
+                    </span>
+                    <span id="bossHpText" class="font-game text-xs">HP: 10/10</span>
+                </div>
             </div>
-            <div class="w-full bg-gray-200/60 h-2.5 rounded-full overflow-hidden p-0.5 shadow-inner">
+            <div class="w-full bg-gray-200/60 h-3 rounded-full overflow-hidden p-0.5 shadow-inner">
                 <div id="bossHpBar" class="bg-gradient-to-r from-red-500 via-pink-500 to-yellow-400 h-full rounded-full transition-all duration-300" style="width: 100%;"></div>
+            </div>
+            <div class="flex justify-between items-center text-[10px] font-bold text-gray-600 px-1 pt-0.5">
+                <span>💥 Boss Attack Damage: <strong class="text-red-600">1-2 HP</strong> to Runner</span>
+                <span>⚔️ Your Hit Damage: <strong class="text-emerald-600">1-2 HP</strong> to Boss</span>
             </div>
         </div>
     </div>
@@ -359,13 +359,12 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-8 gap-1 my-3 bg-purple-200/50 p-1 rounded-xl text-[10px]">
+            <div class="grid grid-cols-7 gap-1 my-3 bg-purple-200/50 p-1 rounded-xl text-[10px]">
                 <button id="tabTracks" class="py-2 font-bold rounded-lg transition bg-white text-purple-800 shadow-sm">Tracks</button>
                 <button id="tabSkins" class="py-2 font-bold rounded-lg transition text-gray-600">Skins</button>
                 <button id="tabShop" class="py-2 font-bold rounded-lg transition text-gray-600">Shop</button>
                 <button id="tabThemes" class="py-2 font-bold rounded-lg transition text-gray-600">Themes</button>
                 <button id="tabScores" class="py-2 font-bold rounded-lg transition text-gray-600">Scores</button>
-                <button id="tabTrophies" class="py-2 font-bold rounded-lg transition text-gray-600">Trophies</button>
                 <button id="tabMissions" class="py-2 font-bold rounded-lg transition text-gray-600">Missions</button>
                 <button id="tabModes" class="py-2 font-bold rounded-lg transition text-gray-600">Modes</button>
             </div>
@@ -415,11 +414,6 @@
                     <div id="scoresGrid" class="space-y-2"></div>
                 </div>
 
-                <div id="contentTrophies" class="hidden space-y-3">
-                    <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Achievement Trophy Room</h4>
-                    <div id="trophyGrid" class="space-y-2.5"></div>
-                </div>
-
                 <div id="contentMissions" class="hidden space-y-3">
                     <h4 class="text-xs font-bold uppercase text-gray-500 tracking-wider">Daily Mission Quests</h4>
                     <div id="missionGrid" class="space-y-2.5"></div>
@@ -440,10 +434,30 @@
                             <div class="w-10 h-10 rounded-full bg-cyan-500 text-white flex items-center justify-center text-lg"><i class="fa-solid fa-user-group"></i></div>
                             <div><div class="font-bold">Duel vs Friend</div><div class="text-xs text-gray-600">P1 (SPACE) vs P2 (ENTER)!</div></div>
                         </button>
-                        <button id="btnStartNewGameMenu" class="w-full p-4 glass-card rounded-2xl flex items-center gap-3 text-left border-2 border-pink-400 hover:border-pink-500 bg-pink-50/50 mt-4">
+                        <button id="btnStartNewGameMenu" class="w-full p-4 glass-card rounded-2xl flex items-center gap-3 text-left border-2 border-pink-400 hover:border-pink-500 bg-pink-50/50 mt-2">
                             <div class="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center text-lg"><i class="fa-solid fa-play"></i></div>
                             <div><div class="font-bold text-pink-700">Start New Run</div><div class="text-xs text-gray-600">Restart and jump straight into a fresh track run!</div></div>
                         </button>
+                    </div>
+
+                    <!-- How to Play Button & Collapsible Detail Section -->
+                    <div class="mt-3">
+                        <button id="btnToggleHowToPlay" class="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-game text-xs rounded-xl shadow-md hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-book-open"></i> How to Play & Rules <i id="howToPlayArrow" class="fa-solid fa-chevron-down transition-transform"></i>
+                        </button>
+                        <div id="howToPlayContent" class="hidden mt-2 p-3.5 glass-card rounded-2xl space-y-2 border-2 border-indigo-200 text-purple-900 text-xs">
+                            <div class="font-game text-indigo-700 text-sm mb-1 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-info"></i> Detailed Game Guide
+                            </div>
+                            <p class="font-semibold text-gray-700">🎯 <strong>Objective:</strong> Run along custom tracks, time your hits precisely as targets pass, and survive epic boss encounters!</p>
+                            <ul class="space-y-1.5 text-gray-700 list-disc pl-4">
+                                <li><strong>Controls:</strong> Tap screen, press <kbd class="bg-white px-1.5 py-0.5 rounded border border-gray-300 font-mono text-[10px]">SPACE</kbd>, or swipe Left/Right/Up/Down on mobile. Swipe Down reverses your running direction.</li>
+                                <li><strong>Scoring & Timing:</strong> Tap right as targets align for <span class="text-pink-600 font-bold">PERFECT</span>, <span class="text-cyan-600 font-bold">GREAT</span>, or <span class="text-yellow-600 font-bold">GOOD</span> ratings to multiply scores and fill combos.</li>
+                                <li><strong>Special Skills:</strong> Press <kbd class="bg-white px-1.5 py-0.5 rounded border border-gray-300 font-mono text-[10px]">Q</kbd> or click the <strong>SKILL</strong> button to unleash a powerful Shockwave Blast!</li>
+                                <li><strong>Power-Ups:</strong> Collect floating power-ups like Shields 🛡️, Freeze ❄️, Hearts ❤️, and Speed Boosts 🚀 along your track.</li>
+                                <li><strong>Boss Battles:</strong> Every 7 levels, face unique Bosses (like the Neon Shadow Dragon). Damage them by hitting targets before their attack timer runs out!</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -635,13 +649,11 @@
         };
 
         const BOSSES = [
-            { name: 'NEON SHADOW DRAGON', emoji: '👾', maxHp: 10, attackType: 'laser', attackMsg: '⚡ LASER BEAM BLAST!' },
-            { name: 'CYBER GHOST', emoji: '👻', maxHp: 12, attackType: 'curse', attackMsg: '👻 SPECTRAL CURSE DRAIN!' },
-            { name: 'SUGAR RUSH SLIME', emoji: '🟢', maxHp: 8, attackType: 'goo', attackMsg: '🟢 STICKY GOO TRAP!' },
-            { name: 'CHRONO CLOCKWORK GOLEM', emoji: '🤖', maxHp: 14, attackType: 'time', attackMsg: '⏳ TEMPORAL SHOCKWAVE!' },
-            { name: 'NEBULA STAR QUEEN', emoji: '👑', maxHp: 15, attackType: 'meteor', attackMsg: '☄️ STARFALL METEOR BARRAGE!' },
-            { name: 'BLAZE PHOENIX', emoji: '🔥', maxHp: 11, attackType: 'fire', attackMsg: '🔥 WILDFIRE INFERNO!' },
-            { name: 'CRYSTAL FROST TITAN', emoji: '🧊', maxHp: 16, attackType: 'ice', attackMsg: '❄️ BLIZZARD FREEZE SPIKE!' }
+            { name: 'NEON SHADOW DRAGON', emoji: '👾', maxHp: 10, attackDmg: 2, attackMsg: '⚡ DRAGON LASER BLAST! (-2 HP)' },
+            { name: 'CYBER GHOST', emoji: '👻', maxHp: 12, attackDmg: 1, attackMsg: '👻 SPECTRAL CURSE DRAIN! (-1 HP)' },
+            { name: 'SUGAR RUSH SLIME', emoji: '🟢', maxHp: 8, attackDmg: 1, attackMsg: '🟢 STICKY SLIME SPLASH! (-1 HP)' },
+            { name: 'CHRONO CLOCKWORK GOLEM', emoji: '🤖', maxHp: 14, attackDmg: 2, attackMsg: '⏳ TEMPORAL SHOCKWAVE! (-2 HP)' },
+            { name: 'NEBULA STAR QUEEN', emoji: '👑', maxHp: 15, attackDmg: 2, attackMsg: '☄️ STARFALL METEOR BARRAGE! (-2 HP)' }
         ];
 
         const THEMES = {
@@ -699,13 +711,13 @@
                 this.activeTargetsP1 = [];
                 this.activeTargetsP2 = [];
                 this.activePowerUps = [];
-                this.activeHazards = [];
 
                 this.isBossFight = false;
                 this.bossHp = 10;
                 this.bossMaxHp = 10;
                 this.currentBoss = BOSSES[0];
-                this.bossSkillTimer = 0;
+                this.bossAttackCountdownTimer = 12.0;
+                this.bossAttackCountdownMax = 12.0;
 
                 this.lastTime = 0;
                 this.frameInterval = 1000 / 30; 
@@ -741,6 +753,7 @@
                 this.bossHpBar = document.getElementById('bossHpBar');
                 this.bossHpText = document.getElementById('bossHpText');
                 this.bossNameLabel = document.getElementById('bossNameLabel');
+                this.bossAttackCountdownEl = document.getElementById('bossAttackCountdown');
                 
                 this.timerBar = document.getElementById('timerBar');
                 this.timerText = document.getElementById('timerText');
@@ -777,7 +790,6 @@
                 this.buildShopSelectors();
                 this.buildThemeSelectors();
                 this.fetchGlobalLeaderboard();
-                this.buildTrophyList();
                 this.buildMissionsList();
                 this.setGameMode('single');
                 this.updateHpBar();
@@ -852,12 +864,11 @@
                 this.spawnNewTargetsRandomly(1);
                 this.spawnNewTargetsRandomly(2);
                 this.spawnPowerUp();
-                this.spawnHazard();
                 this.updateTargetDisplay();
             }
 
             spawnPowerUp() {
-                let threshold = this.isBossFight ? 0.95 : 0.85; // High frequency spawn rate
+                let threshold = this.isBossFight ? 0.95 : 0.85;
                 if (Math.random() < threshold) {
                     let types = ['speed', 'shield', 'freeze', 'magnet', 'heart', 'ghost'];
                     if (this.isBossFight && Math.random() < 0.6) types = ['shield', 'heart', 'freeze'];
@@ -869,19 +880,6 @@
                     this.activePowerUps = [];
                 }
                 this.redrawPowerUpsSVG();
-            }
-
-            spawnHazard() {
-                if (Math.random() < 0.80) { // High frequency spawn rate
-                    const progress = (Math.random() * 0.8) + 0.1;
-                    const pt = this.svgTrack.getPointAtLength(progress * this.pathLength);
-                    const types = ['warning', 'glitch', 'void', 'frost', 'mine'];
-                    const hazardType = types[Math.floor(Math.random() * types.length)];
-                    this.activeHazards = [{ type: hazardType, progress, cx: pt.x, cy: pt.y, passed: false }];
-                } else {
-                    this.activeHazards = [];
-                }
-                this.redrawHazardsSVG();
             }
 
             redrawPowerUpsSVG() {
@@ -906,50 +904,57 @@
                 this.powerUpsGroup.innerHTML = html;
             }
 
-            redrawHazardsSVG() {
-                let html = '';
-                this.activeHazards.forEach(h => {
-                    let icon = '⚠️';
-                    let bgCol = '#FF2255';
-                    if (h.type === 'glitch') { icon = '⚡'; bgCol = '#9370DB'; }
-                    else if (h.type === 'void') { icon = '🌀'; bgCol = '#00DFD8'; }
-                    else if (h.type === 'frost') { icon = '❄️'; bgCol = '#00BFFF'; }
-                    else if (h.type === 'mine') { icon = '💣'; bgCol = '#FF4500'; }
-                    
-                    html += `<g transform="translate(${h.cx}, ${h.cy})">
-                        <circle cx="0" cy="0" r="20" fill="#4A0010" stroke="#FF0044" stroke-width="3" stroke-dasharray="4,2" />
-                        <circle cx="0" cy="0" r="14" fill="${bgCol}" />
-                        <text x="0" y="5" text-anchor="middle" font-size="12" fill="#fff">${icon}</text>
-                    </g>`;
-                });
-                this.powerUpsGroup.innerHTML += html;
-            }
-
             spawnNewTargetsRandomly(playerNum) {
                 let targetsArr = playerNum === 1 ? this.activeTargetsP1 : this.activeTargetsP2;
                 targetsArr.length = 0;
-                let count = Math.floor(Math.random() * 2) + 1;
                 
-                if (playerNum === 1) {
-                    let isDoubleMode = this.gameMode !== 'single';
-                    let baseTime = isDoubleMode ? 13.0 : 10.0;
-                    this.targetHitMaxTime = count === 2 ? baseTime + 3.0 : baseTime;
-                    this.targetHitTimeLeft = this.targetHitMaxTime;
-                }
-                
-                for (let i = 0; i < count; i++) {
-                    let prog = 0.15 + Math.random() * 0.7;
-                    if (i === 1 && targetsArr.length > 0 && Math.abs(prog - targetsArr[0].progress) < 0.25) {
-                        prog = (prog + 0.35) % 1.0;
+                let rand = Math.random();
+                if (playerNum === 1 && this.currentLevel >= 2 && rand < 0.22) {
+                    // Simon Says Sequence Wave (1, 2, 3)
+                    let baseProg = 0.2;
+                    for (let i = 0; i < 3; i++) {
+                        let prog = (baseProg + i * 0.18) % 1.0;
+                        targetsArr.push({ id: i, progress: prog, velocity: 0.04, cx: 0, cy: 0, frozenTimer: 0, type: 'simon', simonIndex: i + 1 });
                     }
-                    let velocity = (Math.random() < 0.5 ? 1 : -1) * (0.05 + Math.random() * 0.08);
-                    this.createTargetObject(playerNum, prog, i, velocity);
+                    this.targetHitMaxTime = 14.0;
+                    this.targetHitTimeLeft = this.targetHitMaxTime;
+                } else if (playerNum === 1 && this.currentLevel >= 3 && rand < 0.44) {
+                    // Shielded Target
+                    let prog = 0.3 + Math.random() * 0.4;
+                    targetsArr.push({ id: 0, progress: prog, velocity: 0.05, cx: 0, cy: 0, frozenTimer: 0, type: 'shielded', shieldHp: 2 });
+                    this.targetHitMaxTime = 10.0;
+                    this.targetHitTimeLeft = this.targetHitMaxTime;
+                } else if (playerNum === 1 && this.currentLevel >= 4 && rand < 0.66) {
+                    // Splitting Target
+                    let prog = 0.35 + Math.random() * 0.3;
+                    targetsArr.push({ id: 0, progress: prog, velocity: 0.05, cx: 0, cy: 0, frozenTimer: 0, type: 'splitting' });
+                    this.targetHitMaxTime = 10.0;
+                    this.targetHitTimeLeft = this.targetHitMaxTime;
+                } else if (playerNum === 1 && this.currentLevel >= 5 && rand < 0.88) {
+                    // Ghost Target
+                    let prog = 0.25 + Math.random() * 0.5;
+                    targetsArr.push({ id: 0, progress: prog, velocity: 0.06, cx: 0, cy: 0, frozenTimer: 0, type: 'ghost', alpha: 1.0, fadeDir: -1 });
+                    this.targetHitMaxTime = 10.0;
+                    this.targetHitTimeLeft = this.targetHitMaxTime;
+                } else {
+                    // Standard Random Targets
+                    let count = Math.floor(Math.random() * 2) + 1;
+                    if (playerNum === 1) {
+                        let isDoubleMode = this.gameMode !== 'single';
+                        let baseTime = isDoubleMode ? 13.0 : 10.0;
+                        this.targetHitMaxTime = count === 2 ? baseTime + 3.0 : baseTime;
+                        this.targetHitTimeLeft = this.targetHitMaxTime;
+                    }
+                    
+                    for (let i = 0; i < count; i++) {
+                        let prog = 0.15 + Math.random() * 0.7;
+                        if (i === 1 && targetsArr.length > 0 && Math.abs(prog - targetsArr[0].progress) < 0.25) {
+                            prog = (prog + 0.35) % 1.0;
+                        }
+                        let velocity = (Math.random() < 0.5 ? 1 : -1) * (0.05 + Math.random() * 0.08);
+                        targetsArr.push({ id: i, progress: prog, velocity, cx: 0, cy: 0, frozenTimer: 0, type: 'standard' });
+                    }
                 }
-            }
-
-            createTargetObject(playerNum, prog, id, velocity) {
-                let targetsArr = playerNum === 1 ? this.activeTargetsP1 : this.activeTargetsP2;
-                targetsArr.push({ id, progress: prog, velocity, cx: 0, cy: 0, frozenTimer: 0 });
                 this.updateTargetPositions(playerNum);
             }
 
@@ -970,12 +975,40 @@
                 if (!targetsArr) return;
                 targetsArr.forEach((t) => {
                     let ringColor = t.frozenTimer > 0 ? '#00BFFF' : '#E11D48';
-                    html += `<g transform="translate(${t.cx}, ${t.cy})">
-                        <circle cx="0" cy="0" r="20" fill="${ringColor}" stroke="#FFFFFF" stroke-width="3" />
-                        <circle cx="0" cy="0" r="14" fill="#FFFFFF" />
-                        <circle cx="0" cy="0" r="8" fill="${ringColor}" />
-                        <circle cx="0" cy="0" r="3" fill="#FACC15" />
-                    </g>`;
+                    let opacity = t.alpha !== undefined ? t.alpha : 1.0;
+
+                    if (t.type === 'shielded') {
+                        html += `<g transform="translate(${t.cx}, ${t.cy})">
+                            <circle cx="0" cy="0" r="24" fill="none" stroke="#00FFFF" stroke-width="3.5" stroke-dasharray="4,3" />
+                            <circle cx="0" cy="0" r="18" fill="#0284C7" stroke="#FFFFFF" stroke-width="3" />
+                            <text x="0" y="5" text-anchor="middle" font-size="13">🛡️</text>
+                        </g>`;
+                    } else if (t.type === 'simon') {
+                        html += `<g transform="translate(${t.cx}, ${t.cy})">
+                            <circle cx="0" cy="0" r="20" fill="#9333EA" stroke="#FFFFFF" stroke-width="3" />
+                            <circle cx="0" cy="0" r="14" fill="#FFFFFF" />
+                            <text x="0" y="5" text-anchor="middle" font-size="12" font-weight="bold" fill="#9333EA">${t.simonIndex}</text>
+                        </g>`;
+                    } else if (t.type === 'splitting') {
+                        html += `<g transform="translate(${t.cx}, ${t.cy})">
+                            <circle cx="0" cy="0" r="20" fill="#F59E0B" stroke="#FFFFFF" stroke-width="3" />
+                            <circle cx="0" cy="0" r="14" fill="#FFFFFF" />
+                            <text x="0" y="5" text-anchor="middle" font-size="12">💥</text>
+                        </g>`;
+                    } else if (t.type === 'ghost') {
+                        html += `<g transform="translate(${t.cx}, ${t.cy})" opacity="${opacity}">
+                            <circle cx="0" cy="0" r="20" fill="#8B5CF6" stroke="#FFFFFF" stroke-width="3" />
+                            <circle cx="0" cy="0" r="14" fill="#FFFFFF" />
+                            <text x="0" y="5" text-anchor="middle" font-size="12">👻</text>
+                        </g>`;
+                    } else {
+                        html += `<g transform="translate(${t.cx}, ${t.cy})">
+                            <circle cx="0" cy="0" r="20" fill="${ringColor}" stroke="#FFFFFF" stroke-width="3" />
+                            <circle cx="0" cy="0" r="14" fill="#FFFFFF" />
+                            <circle cx="0" cy="0" r="8" fill="${ringColor}" />
+                            <circle cx="0" cy="0" r="3" fill="#FACC15" />
+                        </g>`;
+                    }
                 });
                 if (playerNum === 1) {
                     this.targetsGroup.innerHTML = html;
@@ -1019,10 +1052,6 @@
                 document.getElementById('btnTapAction').addEventListener('click', handleP1Action);
                 document.getElementById('btnSpecialSkill').addEventListener('click', handleSpecialSkill);
                 this.btnP2Action.addEventListener('click', handleP2Action);
-
-                document.getElementById('headerModeSelect').addEventListener('change', (e) => {
-                    this.setGameMode(e.target.value);
-                });
                 
                 let touchStartX = 0;
                 let touchStartY = 0;
@@ -1046,10 +1075,10 @@
                         audio.init();
                         if (!this.isRunning) { this.startGame(); return; }
                         if (Math.abs(diffX) > Math.abs(diffY)) {
-                            if (diffX < 0) { this.direction = -1; this.showJudgmentText('SWIPE LEFT ⬅️'); }
-                            else { this.direction = 1; this.showJudgmentText('SWIPE RIGHT ➡️'); }
+                            if (diffX > 0) { this.direction = 1; this.showJudgmentText('SWIPE RIGHT ➡️'); }
+                            else { this.direction = -1; this.showJudgmentText('SWIPE LEFT ⬅️'); }
                         } else {
-                            if (diffY < 0) { this.triggerSpecialSkill(); }
+                            if (diffY < 0) { this.triggerSpecialSkill(); this.showJudgmentText('SWIPE UP (SKILL) ✨'); }
                             else { this.direction *= -1; this.showJudgmentText('SWIPE DOWN (REVERSE) 🔄'); }
                         }
                     } else {
@@ -1116,13 +1145,20 @@
                 document.getElementById('tabShop').addEventListener('click', (e) => this.switchTab('shop', e.target));
                 document.getElementById('tabThemes').addEventListener('click', (e) => this.switchTab('themes', e.target));
                 document.getElementById('tabScores').addEventListener('click', (e) => this.switchTab('scores', e.target));
-                document.getElementById('tabTrophies').addEventListener('click', (e) => this.switchTab('trophies', e.target));
                 document.getElementById('tabMissions').addEventListener('click', (e) => this.switchTab('missions', e.target));
                 document.getElementById('tabModes').addEventListener('click', (e) => this.switchTab('modes', e.target));
 
                 document.getElementById('modeBtnSingle').addEventListener('click', () => { this.setGameMode('single'); menuModal.classList.add('hidden'); this.isPaused = false; });
                 document.getElementById('modeBtnCom').addEventListener('click', () => { this.setGameMode('com'); menuModal.classList.add('hidden'); this.isPaused = false; });
                 document.getElementById('modeBtnFriend').addEventListener('click', () => { this.setGameMode('friend'); menuModal.classList.add('hidden'); this.isPaused = false; });
+
+                // How to Play Toggle listener
+                document.getElementById('btnToggleHowToPlay').addEventListener('click', () => {
+                    const content = document.getElementById('howToPlayContent');
+                    const arrow = document.getElementById('howToPlayArrow');
+                    content.classList.toggle('hidden');
+                    arrow.classList.toggle('rotate-180');
+                });
             }
 
             executeRevive(hpToAdd) {
@@ -1141,13 +1177,6 @@
                 this.skillCooldown = this.skillCooldownMax;
                 audio.playSkillBlast();
                 this.showJudgmentText('✨ SHOCKWAVE BLAST! ✨');
-
-                // Instantly destroy and clear ALL hazards from the track when Q is pressed
-                if (this.activeHazards.length > 0) {
-                    this.activeHazards = [];
-                    this.redrawHazardsSVG();
-                    this.showJudgmentText('ALL HAZARDS DESTROYED! 💥');
-                }
 
                 if (this.activeTargetsP1.length > 0) {
                     let t = this.activeTargetsP1[0];
@@ -1176,7 +1205,6 @@
                             if (this.activeTargetsP1.length === 0) {
                                 this.spawnNewTargetsRandomly(1);
                                 this.spawnPowerUp();
-                                this.spawnHazard();
                             } else {
                                 this.redrawTargetsSVG(1);
                             }
@@ -1261,7 +1289,7 @@
             }
 
             switchTab(tabName, targetEl) {
-                ['Tracks', 'Skins', 'Shop', 'Themes', 'Scores', 'Trophies', 'Missions', 'Modes'].forEach(name => {
+                ['Tracks', 'Skins', 'Shop', 'Themes', 'Scores', 'Missions', 'Modes'].forEach(name => {
                     document.getElementById(`tab${name}`).className = 'py-2 font-bold rounded-lg transition text-gray-600';
                     document.getElementById(`content${name}`).classList.add('hidden');
                 });
@@ -1296,10 +1324,9 @@
                 this.isBossFight = false;
                 this.bossHp = 10;
                 this.bossMaxHp = 10;
-                this.bossSkillTimer = 0;
+                this.bossAttackCountdownTimer = 12.0;
                 this.skillCooldown = 0;
                 this.activePowerUps = [];
-                this.activeHazards = [];
                 this.powerUpsGroup.innerHTML = '';
                 this.bossAvatarGroup.classList.add('hidden');
                 this.bossHpContainer.classList.add('hidden');
@@ -1326,7 +1353,8 @@
                 this.currentBoss = BOSSES[Math.floor(Math.random() * BOSSES.length)];
                 this.bossHp = this.currentBoss.maxHp;
                 this.bossMaxHp = this.currentBoss.maxHp;
-                this.bossSkillTimer = 0;
+                this.bossAttackCountdownMax = 10.0;
+                this.bossAttackCountdownTimer = this.bossAttackCountdownMax;
                 
                 audio.playBossAlarm();
                 this.bossAvatarGroup.classList.remove('hidden');
@@ -1359,7 +1387,7 @@
                 if (this.hasShield) { this.hasShield = false; this.updateHpBar(); this.showJudgmentText('SHIELD BLOCKED! 🛡️'); return; }
                 this.playerHp = Math.max(0, this.playerHp - amount);
                 this.updateHpBar();
-                this.showJudgmentText(`MISS! -${amount} HP 💔`);
+                this.showJudgmentText(`HIT! -${amount} HP 💔`);
                 if (this.playerHp <= 0) this.gameOver();
             }
 
@@ -1396,25 +1424,6 @@
             checkTiming(playerNum = 1) {
                 let currentProg = playerNum === 1 ? this.progress : this.progressP2;
                 let activeTargets = playerNum === 1 ? this.activeTargetsP1 : this.activeTargetsP2;
-                
-                if (playerNum === 1 && this.activeHazards.length > 0) {
-                    let h = this.activeHazards[0];
-                    let hDist = Math.abs(currentProg - h.progress);
-                    if (hDist < 0.05 || hDist > 0.95) {
-                        if (h.type === 'glitch') {
-                            this.direction *= -1;
-                            this.showJudgmentText('GLITCH! CONTROLS REVERSED! ⚡');
-                        } else if (h.type === 'frost') {
-                            this.combo = 0;
-                            this.showJudgmentText('FROST SHATTER! COMBO LOST! ❄️');
-                        } else {
-                            this.damagePlayer(1);
-                        }
-                        this.activeHazards = [];
-                        this.redrawHazardsSVG();
-                        return;
-                    }
-                }
 
                 if (playerNum === 1 && this.activePowerUps.length > 0) {
                     let p = this.activePowerUps[0];
@@ -1430,10 +1439,8 @@
                         else if (p.type === 'heart') { this.playerHp = Math.min(this.maxPlayerHp, this.playerHp + 1); this.updateHpBar(); this.showJudgmentText('EXTRA LIFE! ❤️'); }
                         else if (p.type === 'ghost') { this.hasGhost = true; this.updateHpBar(); this.showJudgmentText('GHOST! 👻'); setTimeout(() => { this.hasGhost = false; this.updateHpBar(); }, 5000); }
                         
-                        // Immediately spawn a new power-up and hazard upon collection
                         this.activePowerUps = [];
                         this.spawnPowerUp();
-                        this.spawnHazard();
                         return;
                     }
                 }
@@ -1442,11 +1449,21 @@
                 let matchedTargetIndex = -1;
                 if (playerNum === 1) this.totalHitsAttempted++;
 
+                // Simon Says Sequence Enforcement
+                let hasSimon = activeTargets.some(t => t.type === 'simon');
+                let minSimonIndex = hasSimon ? Math.min(...activeTargets.filter(t => t.type === 'simon').map(t => t.simonIndex)) : -1;
+
                 activeTargets.forEach((t, index) => {
                     let dist = Math.abs(currentProg - t.progress);
                     if (dist > 0.5) dist = 1.0 - dist;
                     if (dist < bestDist) { bestDist = dist; matchedTargetIndex = index; }
                 });
+
+                if (matchedTargetIndex !== -1 && activeTargets[matchedTargetIndex].type === 'simon') {
+                    if (activeTargets[matchedTargetIndex].simonIndex !== minSimonIndex) {
+                        matchedTargetIndex = -1; // Out of order tap is a miss!
+                    }
+                }
 
                 let judgment = 'MISS';
                 let points = 0;
@@ -1456,6 +1473,35 @@
                 else if (bestDist < 0.07) { judgment = 'GREAT!'; points = 60; if (playerNum === 1) this.combo++; successfulHit = true; }
                 else if (bestDist < 0.12) { judgment = 'GOOD'; points = 30; if (playerNum === 1) this.combo++; successfulHit = true; }
                 else { judgment = 'MISS!'; points = 0; if (playerNum === 1) { this.combo = 0; this.damagePlayer(1); } successfulHit = false; }
+
+                let targetObj = matchedTargetIndex !== -1 ? activeTargets[matchedTargetIndex] : null;
+
+                // SPECIAL TARGET MECHANICS
+                if (successfulHit && targetObj) {
+                    if (targetObj.type === 'shielded' && targetObj.shieldHp > 1) {
+                        targetObj.shieldHp--;
+                        audio.playHit('GOOD', this.combo);
+                        this.showJudgmentText('SHIELD CRACKED! 🛡️');
+                        this.redrawTargetsSVG(playerNum);
+                        return;
+                    }
+
+                    if (targetObj.type === 'splitting') {
+                        let p1 = targetObj.progress;
+                        activeTargets.splice(matchedTargetIndex, 1);
+                        activeTargets.push({ id: Math.random(), progress: p1, velocity: 0.08, cx: targetObj.cx, cy: targetObj.cy, frozenTimer: 0, type: 'standard' });
+                        activeTargets.push({ id: Math.random(), progress: p1, velocity: -0.08, cx: targetObj.cx, cy: targetObj.cy, frozenTimer: 0, type: 'standard' });
+                        this.showJudgmentText('SPLIT! 💥 CATCH BOTH!');
+                        audio.playPowerUp();
+                        this.redrawTargetsSVG(playerNum);
+                        return;
+                    }
+
+                    if (targetObj.type === 'ghost' && targetObj.alpha < 0.4) {
+                        points += 100; // Bonus for catching phasing ghost
+                        this.showJudgmentText('PHASE HIT! 👻 +100 PTS');
+                    }
+                }
 
                 if (playerNum === 1) {
                     if (this.combo > this.maxComboReached) { this.maxComboReached = this.combo; if (this.maxComboReached >= 50) { this.achievements.combo50 = true; this.saveAchievements(); } }
@@ -1475,11 +1521,11 @@
                 }
 
                 if (this.isBossFight && successfulHit && playerNum === 1) {
-                    let damage = judgment.includes('PERFECT') ? 2 : 1;
-                    this.bossHp -= damage;
+                    let bossDmg = judgment.includes('PERFECT') ? 2 : 1;
+                    this.bossHp -= bossDmg;
                     this.updateBossHpBar();
-                    if (matchedTargetIndex !== -1) { let t = activeTargets[matchedTargetIndex]; this.showFloatingPopup(`-${damage} HP`, t.cx, t.cy); }
-                    this.showJudgmentText(`HIT BOSS -${damage} HP! 🔥`);
+                    if (matchedTargetIndex !== -1) { let t = activeTargets[matchedTargetIndex]; this.showFloatingPopup(`-${bossDmg} HP`, t.cx, t.cy); }
+                    this.showJudgmentText(`HIT BOSS! -${bossDmg} BOSS HP 🔥`);
                     if (this.bossHp <= 0) this.checkBossVictory();
                 }
 
@@ -1503,7 +1549,6 @@
                             if (activeTargets.length === 0) {
                                 this.spawnNewTargetsRandomly(1);
                                 this.spawnPowerUp();
-                                this.spawnHazard();
                             } else {
                                 this.redrawTargetsSVG(1);
                             }
@@ -1793,20 +1838,6 @@
                 });
             }
 
-            buildTrophyList() {
-                const trophyGrid = document.getElementById('trophyGrid');
-                trophyGrid.innerHTML = '';
-                [{ key: 'firstRun', title: 'First Steps', desc: 'Complete your first run' }, { key: 'combo50', title: 'Combo Master', desc: 'Reach combo x50' }, { key: 'bossSlayer', title: 'Boss Slayer', desc: 'Defeat any Boss' }].forEach(item => {
-                    const unlocked = this.achievements[item.key];
-                    trophyGrid.innerHTML += `<div class="p-3 rounded-2xl glass-card flex items-center gap-3 border-2 ${unlocked ? 'border-yellow-400 bg-yellow-50/40' : 'border-gray-300 opacity-60'}"><div class="w-10 h-10 rounded-full flex items-center justify-center text-xl ${unlocked ? 'bg-yellow-400 text-white' : 'bg-gray-300 text-gray-500'}"><i class="fa-solid fa-trophy"></i></div><div><div class="font-bold text-sm text-purple-900">${item.title}</div><div class="text-xs text-gray-600">${item.desc}</div></div></div>`;
-                });
-            }
-
-            saveAchievements() {
-                localStorage.setItem('trackrunner_achievements', JSON.stringify(this.achievements));
-                this.buildTrophyList();
-            }
-
             checkMissionsOnGameOver() {
                 this.missions.completeRuns.current = Math.min(this.missions.completeRuns.target, this.missions.completeRuns.current + 1);
                 if (this.score > this.missions.score2000.current) this.missions.score2000.current = Math.min(this.missions.score2000.target, this.score);
@@ -1826,7 +1857,6 @@
 
             setGameMode(mode) {
                 this.gameMode = mode;
-                document.getElementById('headerModeSelect').value = mode;
                 document.getElementById('modeBtnSingle').className = `w-full p-4 glass-card rounded-2xl flex items-center gap-3 border-2 ${mode === 'single' ? 'border-purple-400' : 'border-transparent'}`;
                 document.getElementById('modeBtnCom').className = `w-full p-4 glass-card rounded-2xl flex items-center gap-3 border-2 ${mode === 'com' ? 'border-purple-400' : 'border-transparent'}`;
                 document.getElementById('modeBtnFriend').className = `w-full p-4 glass-card rounded-2xl flex items-center gap-3 border-2 ${mode === 'friend' ? 'border-purple-400' : 'border-transparent'}`;
@@ -1877,21 +1907,13 @@
                             } else {
                                 t.progress = (t.progress + t.velocity * dt + 1.0) % 1.0;
                             }
+                            if (t.type === 'ghost') {
+                                t.alpha += t.fadeDir * dt * 2.2;
+                                if (t.alpha <= 0.2) { t.alpha = 0.2; t.fadeDir = 1; }
+                                else if (t.alpha >= 1.0) { t.alpha = 1.0; t.fadeDir = -1; }
+                            }
                         });
                         this.updateTargetPositions(1);
-
-                        // Check hazard pass penalty (-1 HP if passed un-destroyed)
-                        if (this.activeHazards.length > 0) {
-                            let h = this.activeHazards[0];
-                            let distFromRunner = Math.abs(this.progress - h.progress);
-                            if (!h.passed && this.progress > h.progress && distFromRunner > 0.05) {
-                                h.passed = true;
-                                this.damagePlayer(1);
-                                this.showJudgmentText('MISSED HAZARD! -1 HP ⚠️');
-                                this.activeHazards = [];
-                                this.redrawHazardsSVG();
-                            }
-                        }
 
                         if (this.gameMode !== 'single') {
                             this.activeTargetsP2.forEach(t => {
@@ -1923,29 +1945,17 @@
                         this.timerText.innerText = `${this.targetHitTimeLeft.toFixed(1)}s`;
 
                         let currentRunSpeed = this.speed;
-                        if (this.activeHazards.length > 0 && this.activeHazards[0].type === 'void') {
-                            let hDist = Math.abs(this.progress - this.activeHazards[0].progress);
-                            if (hDist < 0.15) currentRunSpeed *= 0.5;
-                        }
 
                         if (this.isBossFight) {
                             currentRunSpeed *= 1.25;
-                            this.bossSkillTimer += dt;
-                            if (this.bossSkillTimer >= 15.0) {
-                                this.bossSkillTimer = 0;
+                            this.bossAttackCountdownTimer -= dt;
+                            if (this.bossAttackCountdownTimer <= 0) {
+                                this.bossAttackCountdownTimer = this.bossAttackCountdownMax;
                                 audio.playBossAlarm();
+                                this.damagePlayer(this.currentBoss.attackDmg);
                                 this.showJudgmentText(this.currentBoss.attackMsg);
-                                
-                                if (this.currentBoss.attackType === 'curse') {
-                                    this.damagePlayer(1);
-                                } else if (this.currentBoss.attackType === 'goo') {
-                                    this.targetHitTimeLeft = Math.max(1.0, this.targetHitTimeLeft - 3.0);
-                                } else if (this.currentBoss.attackType === 'time') {
-                                    this.direction *= -1;
-                                } else {
-                                    this.damagePlayer(2);
-                                }
                             }
+                            this.bossAttackCountdownEl.innerHTML = `<i class="fa-solid fa-clock"></i> Attack in: ${this.bossAttackCountdownTimer.toFixed(1)}s`;
                         }
 
                         this.progress += currentRunSpeed * this.direction * dt;
@@ -1954,12 +1964,19 @@
 
                         const currentLen1 = this.progress * this.pathLength;
                         const point1 = this.svgTrack.getPointAtLength(currentLen1);
-                        const p1A = this.svgTrack.getPointAtLength(Math.max(0, currentLen1 - 2));
-                        const p1B = this.svgTrack.getPointAtLength(Math.min(this.pathLength, currentLen1 + 2));
-                        let angle1 = Math.atan2(p1B.y - p1A.y, p1B.x - p1A.x) * (180 / Math.PI);
-                        if (this.direction === -1) angle1 += 180;
+                        const p1A = this.svgTrack.getPointAtLength(Math.max(0, currentLen1 - 3));
+                        const p1B = this.svgTrack.getPointAtLength(Math.min(this.pathLength, currentLen1 + 3));
                         
-                        this.charGroup.setAttribute('transform', `translate(${point1.x}, ${point1.y}) rotate(${angle1})`);
+                        let dx = p1B.x - p1A.x;
+                        let dy = p1B.y - p1A.y;
+                        let angle1 = Math.atan2(dy, dx) * (180 / Math.PI);
+                        
+                        if (this.direction === -1) {
+                            angle1 += 180;
+                        }
+                        
+                        let flipScaleY = (angle1 > 90 && angle1 <= 270) ? -1 : 1;
+                        this.charGroup.setAttribute('transform', `translate(${point1.x}, ${point1.y}) rotate(${angle1}) scale(1, ${flipScaleY})`);
 
                         if (this.gameMode !== 'single') {
                             let comSpeed = currentRunSpeed * (this.gameMode === 'com' ? 0.92 : 1.0);
@@ -1969,11 +1986,12 @@
 
                             const currentLen2 = this.progressP2 * this.pathLength;
                             const point2 = this.svgTrack.getPointAtLength(currentLen2);
-                            const p2A = this.svgTrack.getPointAtLength(Math.max(0, currentLen2 - 2));
-                            const p2B = this.svgTrack.getPointAtLength(Math.min(this.pathLength, currentLen2 + 2));
+                            const p2A = this.svgTrack.getPointAtLength(Math.max(0, currentLen2 - 3));
+                            const p2B = this.svgTrack.getPointAtLength(Math.min(this.pathLength, currentLen2 + 3));
                             let angle2 = Math.atan2(p2B.y - p2A.y, p2B.x - p2A.x) * (180 / Math.PI);
                             if (this.directionP2 === -1) angle2 += 180;
-                            document.getElementById('characterGroupPip').innerHTML = `<g transform="translate(${point2.x}, ${point2.y}) rotate(${angle2}) scale(0.85)">${CHARACTERS['bunny'].svg}</g>`;
+                            let flipPipY = (angle2 > 90 && angle2 <= 270) ? -1 : 1;
+                            document.getElementById('characterGroupPip').innerHTML = `<g transform="translate(${point2.x}, ${point2.y}) rotate(${angle2}) scale(0.85, ${0.85 * flipPipY})">${CHARACTERS['bunny'].svg}</g>`;
                         }
                     }
                 }
